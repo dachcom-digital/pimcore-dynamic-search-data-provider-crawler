@@ -1,0 +1,32 @@
+{
+    "name": "dachcom-digital/dynamic-search-data-provider-crawler",
+    "type": "pimcore-bundle",
+    "license": "GPL-3.0+",
+    "description": "",
+    "keywords": ["pimcore", "search", "dynamic-search", "data-provider","crawler"],
+    "homepage": "https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler",
+    "authors": [
+        {
+            "name": "DACHCOM.DIGITAL Stefan Hagspiel",
+            "email": "shagspiel@dachcom.ch",
+            "homepage": "http://www.dachcom.com/",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DsWebCrawlerBundle\\": "src/DsWebCrawlerBundle"
+        }
+    },
+
+    "extra": {
+        "pimcore": {
+            "bundles": [
+                "DsWebCrawlerBundle\\DsWebCrawlerBundle"
+            ]
+        }
+    },
+    "require": {
+        "vdb/php-spider": "0.4"
+    }
+}

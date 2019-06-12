@@ -1,0 +1,37 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    DsWebCrawlerBundle\Configuration\Configuration: ~
+
+    DsWebCrawlerBundle\Service\CrawlerStateService: ~
+
+    DsWebCrawlerBundle\Service\FileWatcherService: ~
+
+    DsWebCrawlerBundle\Service\CrawlerService: ~
+
+    DsWebCrawlerBundle\Registry\EventSubscriberRegistry: ~
+
+    DsWebCrawlerBundle\Twig\Extension\CrawlerExtension:
+        tags:
+            - { name: twig.extension }
+
+    DsWebCrawlerBundle\EventSubscriber\LogEventSubscriber:
+        tags:
+            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }
+            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'queue' }
+            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
+
+    DsWebCrawlerBundle\EventSubscriber\NotifyEventSubscriber:
+        tags:
+            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
+
+    #
+    # Data Provider for Dynamic Search Bundle
+    #
+    DsWebCrawlerBundle\Provider\CrawlerDataProvider:
+        tags:
+            - { name: 'dynamic_search.data_provider', alias: 'webCrawler' }
