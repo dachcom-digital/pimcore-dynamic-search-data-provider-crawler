@@ -13,9 +13,6 @@ interface CrawlerServiceInterface
      */
     public function init(LoggerInterface $logger, ContextDataInterface $contextData);
 
-    /**
-     * @throws \Exception
-     */
     public function process();
 
 }

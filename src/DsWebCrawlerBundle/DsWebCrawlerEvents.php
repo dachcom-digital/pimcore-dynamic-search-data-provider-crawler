@@ -22,16 +22,13 @@ final class DsWebCrawlerEvents
     const DS_WEB_CRAWLER_FINISH = 'ds_web_crawler.finish';
 
     /**
+     * Triggers if a exception has been thrown
+     */
+    const DS_WEB_CRAWLER_ERROR = 'ds_web_crawler.exception';
+
+    /**
      * Triggers after a crawled uri has been downloaded and stored as resource
      */
     const DS_WEB_CRAWLER_VALID_RESOURCE_DOWNLOADED = 'ds_web_crawler.valid_resource_downloaded';
 
-    /**
-     * @internal
-     *
-     * Triggers if the crawl task stops via command line cancelling signal
-     *
-     * This is an spider internal event and cannot be used outside the crawler dispatcher
-     */
-    const DS_WEB_CRAWLER_INTERRUPTED = 'ds_web_crawler.interrupted';
 }

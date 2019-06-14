@@ -29,6 +29,10 @@ services:
         tags:
             - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
 
+    DsWebCrawlerBundle\EventSubscriber\AbortEventSubscriber:
+        tags:
+            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }
+
     #
     # Data Provider for Dynamic Search Bundle
     #

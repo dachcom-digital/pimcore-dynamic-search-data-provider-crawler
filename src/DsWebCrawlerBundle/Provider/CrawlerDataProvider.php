@@ -64,6 +64,20 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritDoc}
      */
+    public function cancelledShutdown(ContextDataInterface $contextData)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function emergencyShutdown(ContextDataInterface $contextData)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function execute(ContextDataInterface $contextData)
     {
         $this->crawlerService->init($this->logger, $contextData);

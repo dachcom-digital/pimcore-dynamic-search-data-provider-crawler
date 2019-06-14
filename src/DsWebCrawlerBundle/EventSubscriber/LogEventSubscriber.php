@@ -76,8 +76,7 @@ class LogEventSubscriber implements EventSubscriberInterface
             SpiderEvents::SPIDER_CRAWL_USER_STOPPED => 'logStoppedBySignal',
 
             DsWebCrawlerEvents::DS_WEB_CRAWLER_START       => 'logStarted',
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH      => 'logFinished',
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_INTERRUPTED => 'logStopped'
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH      => 'logFinished'
         ];
     }
 
@@ -156,16 +155,8 @@ class LogEventSubscriber implements EventSubscriberInterface
      */
     public function logStoppedBySignal(Event $event)
     {
-        $logEvent = new GenericEvent($this, ['errorMessage' => 'crawling canceled (lost signal)']);
+        $logEvent = new GenericEvent($this, ['errorMessage' => 'crawling canceled']);
         $this->logEvent('stopped', $logEvent, 'debug', $logEvent->getArgument('errorMessage'));
-    }
-
-    /**
-     * @param GenericEvent $event
-     */
-    public function logStopped(GenericEvent $event)
-    {
-        $this->logEvent('stopped', $event, 'debug', $event->getArgument('errorMessage'));
     }
 
     /**
@@ -204,7 +195,7 @@ class LogEventSubscriber implements EventSubscriberInterface
                 $message .= $additionalMessage . ' ';
             }
 
-            $message .= $event->hasArgument('uri') ? $event->getArgument('uri')->toString() : '[uri not available]';
+            $message .= $event->hasArgument('uri') ? $event->getArgument('uri')->toString() : '';
 
             $this->logger->log($debugLevel, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextData->getName());
         }

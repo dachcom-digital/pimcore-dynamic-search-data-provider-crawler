@@ -12,7 +12,6 @@ use GuzzleHttp\Client;
 use DsWebCrawlerBundle\Configuration\Configuration;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
 use DsWebCrawlerBundle\Event\CrawlerRequestHeaderEvent;
-use DsWebCrawlerBundle\Listener;
 use DsWebCrawlerBundle\Filter\Discovery;
 use DsWebCrawlerBundle\Filter\PostFetch;
 use DsWebCrawlerBundle\PersistenceHandler;
@@ -25,7 +24,6 @@ use VDB\Spider\QueueManager\InMemoryQueueManager;
 use VDB\Spider\RequestHandler\GuzzleRequestHandler;
 use VDB\Spider\Spider;
 use VDB\Spider\Filter;
-use VDB\Spider\Event\SpiderEvents;
 use VDB\Spider\Discoverer\XPathExpressionDiscoverer;
 use GuzzleHttp\Middleware;
 
@@ -86,15 +84,12 @@ class CrawlerService implements CrawlerServiceInterface
         $this->logger->log($level, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextData->getName());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function process()
     {
         try {
             $this->initializeSpider();
         } catch (\Exception $e) {
-            $this->log('error', $e->getMessage());
+            $this->dispatchError(sprintf('Error while initializing spider. Error was: %s', $e->getMessage()), $e);
             return;
         }
 
@@ -102,11 +97,12 @@ class CrawlerService implements CrawlerServiceInterface
         $queueManager->setTraversalAlgorithm(InMemoryQueueManager::ALGORITHM_DEPTH_FIRST);
         $this->spider->setQueueManager($queueManager);
 
+        $this->attachSpiderEvents();
+
         try {
-            $this->attachSpiderEvents();
             $this->setupDiscoverySet();
         } catch (\Exception $e) {
-            $this->log('error', $e->getMessage());
+            $this->dispatchError(sprintf('Error while adding discovery sets. Error was: %s', $e->getMessage()), $e);
             return;
         }
 
@@ -127,29 +123,9 @@ class CrawlerService implements CrawlerServiceInterface
 
         $this->getSpiderDownloader()->setPersistenceHandler($persistenceHandler);
 
-        $abortListener = new Listener\Abort($this->spider);
-        $this->getSpiderDownloader()->getDispatcher()->addListener(
-            SpiderEvents::SPIDER_CRAWL_PRE_REQUEST,
-            [$abortListener, 'checkCrawlerState']
-        );
-
-        $this->spider->getDispatcher()->addListener(
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_INTERRUPTED,
-            [$abortListener, 'stopCrawler']
-        );
-
-        $this->spider->getDispatcher()->addListener(
-            SpiderEvents::SPIDER_CRAWL_USER_STOPPED,
-            [$abortListener, 'stopCrawler']
-        );
-
         $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_START, new GenericEvent($this, ['spider' => $this->spider]));
 
-        try {
-            $this->spider->crawl();
-        } catch (\Throwable $e) {
-            $this->log('error', $e->getMessage());
-        }
+        $this->spider->crawl();
 
         $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH, new GenericEvent($this, ['spider' => $this->spider]));
 
@@ -289,12 +265,11 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function getOption($key)
     {
-        $options = [];
-
         try {
             $options = $this->contextData->getDataProviderOptions();
         } catch (UnresolvedContextConfigurationException $e) {
-            $this->log('ERROR', $e->getMessage());
+            $this->dispatchError(sprintf('Error while fetching context data options key "%s". Error was: %s', $key, $e->getMessage()), $e);
+            return false;
         }
 
         if ($key === 'invalid_links') {
@@ -306,16 +281,15 @@ class CrawlerService implements CrawlerServiceInterface
     }
 
     /**
-     * @return array
+     * @return array|bool
      */
     protected function getInvalidLinks()
     {
-        $options = [];
-
         try {
             $options = $this->contextData->getDataProviderOptions();
         } catch (UnresolvedContextConfigurationException $e) {
-            $this->log('ERROR', $e->getMessage());
+            $this->dispatchError(sprintf('Error while building invalid links options for crawler. Error was: %s', $e->getMessage()), $e);
+            return false;
         }
 
         $userInvalidLinks = $options['user_invalid_links'];
@@ -332,5 +306,20 @@ class CrawlerService implements CrawlerServiceInterface
         }
 
         return $invalidLinkRegex;
+    }
+
+    /**
+     * @param string     $message
+     * @param \Exception $exception
+     */
+    protected function dispatchError(string $message, \Exception $exception)
+    {
+        $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_ERROR,
+            new GenericEvent($this, [
+                'spider'    => $this->spider,
+                'message'   => $message,
+                'exception' => $exception
+            ])
+        );
     }
 }
