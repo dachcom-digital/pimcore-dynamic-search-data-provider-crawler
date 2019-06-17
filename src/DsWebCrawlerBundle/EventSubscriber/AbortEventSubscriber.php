@@ -82,7 +82,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
         }
 
         $this->dispatched = true;
-        $newDataEvent = new ErrorEvent($this->contextData, 'crawler has been stopped by user.', DsWebCrawlerBundle::PROVIDER_NAME);
+        $newDataEvent = new ErrorEvent($this->contextData, 'crawler has been stopped by user', DsWebCrawlerBundle::PROVIDER_NAME);
         $this->eventDispatcher->dispatch(DynamicSearchEvents::ERROR_DISPATCH_ABORT, $newDataEvent);
     }
 
