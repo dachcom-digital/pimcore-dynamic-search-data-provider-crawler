@@ -27,6 +27,6 @@
         }
     },
     "require": {
-        "vdb/php-spider": "0.4"
+        "vdb/php-spider": "^0.4"
     }
 }
