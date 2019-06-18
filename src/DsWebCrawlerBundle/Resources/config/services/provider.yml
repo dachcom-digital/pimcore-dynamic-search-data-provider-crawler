@@ -1,0 +1,13 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    #
+    # Data Provider for Dynamic Search Bundle
+    #
+    DsWebCrawlerBundle\Provider\CrawlerDataProvider:
+        tags:
+            - { name: 'dynamic_search.data_provider', alias: 'webCrawler' }

@@ -1,3 +1,6 @@
+imports:
+    - { resource: services/*.yml }
+
 services:
 
     _defaults:
@@ -18,24 +21,3 @@ services:
     DsWebCrawlerBundle\Twig\Extension\CrawlerExtension:
         tags:
             - { name: twig.extension }
-
-    DsWebCrawlerBundle\EventSubscriber\LogEventSubscriber:
-        tags:
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'queue' }
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
-
-    DsWebCrawlerBundle\EventSubscriber\NotifyEventSubscriber:
-        tags:
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
-
-    DsWebCrawlerBundle\EventSubscriber\AbortEventSubscriber:
-        tags:
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }
-
-    #
-    # Data Provider for Dynamic Search Bundle
-    #
-    DsWebCrawlerBundle\Provider\CrawlerDataProvider:
-        tags:
-            - { name: 'dynamic_search.data_provider', alias: 'webCrawler' }

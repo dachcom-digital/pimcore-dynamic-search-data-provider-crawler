@@ -2,7 +2,6 @@
 
 namespace DsWebCrawlerBundle\EventSubscriber;
 
-use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\DynamicSearchEvents;
@@ -84,7 +83,7 @@ class NotifyEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $newDataEvent = new NewDataEvent(DsWebCrawlerBundle::PROVIDER_NAME, $this->contextData, $rawContent);
+        $newDataEvent = new NewDataEvent($this->contextData, $rawContent);
 
         $this->eventDispatcher->dispatch(DynamicSearchEvents::NEW_DATA_AVAILABLE, $newDataEvent);
 
