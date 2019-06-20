@@ -3,7 +3,6 @@
 namespace DsWebCrawlerBundle\EventSubscriber;
 
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
-use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\DynamicSearchEvents;
 use DynamicSearchBundle\Event\NewDataEvent;
 use DynamicSearchBundle\EventDispatcher\DynamicSearchEventDispatcherInterface;
@@ -14,9 +13,9 @@ use VDB\Spider\Resource;
 class NotifyEventSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var ContextDataInterface
+     * @var string
      */
-    protected $contextData;
+    protected $contextName;
 
     /**
      * @var LoggerInterface
@@ -37,11 +36,11 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ContextDataInterface $contextData
+     * @param string $contextName
      */
-    public function setContextData(ContextDataInterface $contextData)
+    public function setContextName(string $contextName)
     {
-        $this->contextData = $contextData;
+        $this->contextName = $contextName;
     }
 
     /**
@@ -83,7 +82,7 @@ class NotifyEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $newDataEvent = new NewDataEvent($this->contextData, $rawContent);
+        $newDataEvent = new NewDataEvent($this->contextName, $rawContent);
 
         $this->eventDispatcher->dispatch(DynamicSearchEvents::NEW_DATA_AVAILABLE, $newDataEvent);
 

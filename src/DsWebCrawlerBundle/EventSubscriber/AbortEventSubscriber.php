@@ -4,7 +4,6 @@ namespace DsWebCrawlerBundle\EventSubscriber;
 
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
-use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\DynamicSearchEvents;
 use DynamicSearchBundle\Event\ErrorEvent;
 use DynamicSearchBundle\EventDispatcher\DynamicSearchEventDispatcherInterface;
@@ -21,9 +20,9 @@ class AbortEventSubscriber implements EventSubscriberInterface
     protected $dispatched;
 
     /**
-     * @var ContextDataInterface
+     * @var string
      */
-    protected $contextData;
+    protected $contextName;
 
     /**
      * @var LoggerInterface
@@ -45,11 +44,11 @@ class AbortEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ContextDataInterface $contextData
+     * @param string $contextName
      */
-    public function setContextData(ContextDataInterface $contextData)
+    public function setContextName(string $contextName)
     {
-        $this->contextData = $contextData;
+        $this->contextName = $contextName;
     }
 
     /**
@@ -82,7 +81,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
         }
 
         $this->dispatched = true;
-        $newDataEvent = new ErrorEvent($this->contextData, 'crawler has been stopped by user', DsWebCrawlerBundle::PROVIDER_NAME);
+        $newDataEvent = new ErrorEvent($this->contextName, 'crawler has been stopped by user', DsWebCrawlerBundle::PROVIDER_NAME);
         $this->eventDispatcher->dispatch(DynamicSearchEvents::ERROR_DISPATCH_ABORT, $newDataEvent);
     }
 
@@ -97,7 +96,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
         }
 
         $this->dispatched = true;
-        $errorEvent = new ErrorEvent($this->contextData, $event->getArgument('message'), DsWebCrawlerBundle::PROVIDER_NAME, $event->getArgument('exception'));
+        $errorEvent = new ErrorEvent($this->contextName, $event->getArgument('message'), DsWebCrawlerBundle::PROVIDER_NAME, $event->getArgument('exception'));
         $this->eventDispatcher->dispatch(DynamicSearchEvents::ERROR_DISPATCH_CRITICAL, $errorEvent);
     }
 }

@@ -5,8 +5,6 @@ namespace DsWebCrawlerBundle\Service;
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 use DsWebCrawlerBundle\Registry\EventSubscriberRegistryInterface;
-use DynamicSearchBundle\Context\ContextDataInterface;
-use DynamicSearchBundle\Exception\UnresolvedContextConfigurationException;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use GuzzleHttp\Client;
 use DsWebCrawlerBundle\Configuration\Configuration;
@@ -50,9 +48,14 @@ class CrawlerService implements CrawlerServiceInterface
     protected $logger;
 
     /**
-     * @var ContextDataInterface
+     * @var array
      */
-    protected $contextData;
+    protected $providerConfiguration;
+
+    /**
+     * @var string
+     */
+    protected $contextName;
 
     /**
      * @param EventSubscriberRegistryInterface $eventSubscriberRegistry
@@ -69,10 +72,11 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function init(LoggerInterface $logger, ContextDataInterface $contextOptions)
+    public function init(LoggerInterface $logger, string $contextName, array $providerConfiguration)
     {
         $this->logger = $logger;
-        $this->contextData = $contextOptions;
+        $this->contextName = $contextName;
+        $this->providerConfiguration = $providerConfiguration;
     }
 
     /**
@@ -81,7 +85,7 @@ class CrawlerService implements CrawlerServiceInterface
      */
     public function log($level, $message)
     {
-        $this->logger->log($level, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextData->getName());
+        $this->logger->log($level, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextName);
     }
 
     public function process()
@@ -177,7 +181,7 @@ class CrawlerService implements CrawlerServiceInterface
             foreach ($eventSubscriber as $typeEventSubscriber) {
 
                 $typeEventSubscriber->setLogger($this->logger);
-                $typeEventSubscriber->setContextData($this->contextData);
+                $typeEventSubscriber->setContextName($this->contextName);
 
                 switch ($dispatcherType) {
                     case 'spider':
@@ -189,7 +193,6 @@ class CrawlerService implements CrawlerServiceInterface
                     case 'downloader':
                         $this->getSpiderDownloader()->getDispatcher()->addSubscriber($typeEventSubscriber);
                         break;
-
                 }
             }
         }
@@ -222,7 +225,6 @@ class CrawlerService implements CrawlerServiceInterface
 
         $discoverySet->addFilter(new Discovery\UriFilter($this->getOption('invalid_links'), $this->spider->getDispatcher()));
         $discoverySet->addFilter(new Discovery\NegativeUriFilter($this->getOption('valid_links'), $this->spider->getDispatcher()));
-
     }
 
     /**
@@ -265,19 +267,11 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function getOption($key)
     {
-        try {
-            $options = $this->contextData->getDataProviderOptions();
-        } catch (UnresolvedContextConfigurationException $e) {
-            $this->dispatchError(sprintf('Error while fetching context data options key "%s". Error was: %s', $key, $e->getMessage()), $e);
-            return false;
-        }
-
         if ($key === 'invalid_links') {
             return $this->getInvalidLinks();
         }
 
-        return $options[$key];
-
+        return $this->providerConfiguration[$key];
     }
 
     /**
@@ -285,15 +279,8 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function getInvalidLinks()
     {
-        try {
-            $options = $this->contextData->getDataProviderOptions();
-        } catch (UnresolvedContextConfigurationException $e) {
-            $this->dispatchError(sprintf('Error while building invalid links options for crawler. Error was: %s', $e->getMessage()), $e);
-            return false;
-        }
-
-        $userInvalidLinks = $options['user_invalid_links'];
-        $coreInvalidLinks = $options['core_invalid_links'];
+        $userInvalidLinks = $this->providerConfiguration['user_invalid_links'];
+        $coreInvalidLinks = $this->providerConfiguration['core_invalid_links'];
 
         if (!empty($userInvalidLinks) && !empty($coreInvalidLinks)) {
             $invalidLinkRegex = array_merge($userInvalidLinks, [$coreInvalidLinks]);

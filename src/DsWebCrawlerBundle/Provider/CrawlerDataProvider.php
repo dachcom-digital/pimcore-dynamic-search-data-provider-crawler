@@ -27,6 +27,11 @@ class CrawlerDataProvider implements DataProviderInterface
     protected $logger;
 
     /**
+     * @var array
+     */
+    protected $configuration;
+
+    /**
      * @param CrawlerServiceInterface     $crawlerService
      * @param FileWatcherServiceInterface $fileWatcherService
      */
@@ -42,6 +47,14 @@ class CrawlerDataProvider implements DataProviderInterface
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setOptions(array $configuration)
+    {
+        $this->configuration = $configuration;
     }
 
     /**
@@ -80,7 +93,7 @@ class CrawlerDataProvider implements DataProviderInterface
      */
     public function execute(ContextDataInterface $contextData)
     {
-        $this->crawlerService->init($this->logger, $contextData);
+        $this->crawlerService->init($this->logger, $contextData->getName(), $this->configuration);
         $this->crawlerService->process();
     }
 

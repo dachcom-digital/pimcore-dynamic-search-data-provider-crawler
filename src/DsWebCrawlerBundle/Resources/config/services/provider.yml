@@ -10,4 +10,4 @@ services:
     #
     DsWebCrawlerBundle\Provider\CrawlerDataProvider:
         tags:
-            - { name: 'dynamic_search.data_provider', alias: 'webCrawler' }
+            - { name: 'dynamic_search.data_provider', identifier: 'webCrawler' }

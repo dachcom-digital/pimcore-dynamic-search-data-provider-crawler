@@ -4,7 +4,6 @@ namespace DsWebCrawlerBundle\EventSubscriber;
 
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
-use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -35,9 +34,9 @@ class LogEventSubscriber implements EventSubscriberInterface
     protected $failed = 0;
 
     /**
-     * @var ContextDataInterface
+     * @var string
      */
-    protected $contextData;
+    protected $contextName;
 
     /**
      * @var LoggerInterface
@@ -45,11 +44,11 @@ class LogEventSubscriber implements EventSubscriberInterface
     protected $logger;
 
     /**
-     * @param ContextDataInterface $contextData
+     * @param string $contextName
      */
-    public function setContextData(ContextDataInterface $contextData)
+    public function setContextName(string $contextName)
     {
-        $this->contextData = $contextData;
+        $this->contextName = $contextName;
     }
 
     /**
@@ -75,8 +74,8 @@ class LogEventSubscriber implements EventSubscriberInterface
             SpiderEvents::SPIDER_CRAWL_POST_REQUEST => 'logCrawled',
             SpiderEvents::SPIDER_CRAWL_USER_STOPPED => 'logStoppedBySignal',
 
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_START       => 'logStarted',
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH      => 'logFinished'
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_START  => 'logStarted',
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH => 'logFinished'
         ];
     }
 
@@ -197,7 +196,7 @@ class LogEventSubscriber implements EventSubscriberInterface
 
             $message .= $event->hasArgument('uri') ? $event->getArgument('uri')->toString() : '';
 
-            $this->logger->log($debugLevel, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextData->getName());
+            $this->logger->log($debugLevel, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextName);
         }
     }
 }

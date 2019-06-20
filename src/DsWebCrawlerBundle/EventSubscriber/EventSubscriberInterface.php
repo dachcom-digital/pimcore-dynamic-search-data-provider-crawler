@@ -2,7 +2,6 @@
 
 namespace DsWebCrawlerBundle\EventSubscriber;
 
-use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 
 interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\EventSubscriberInterface
@@ -13,7 +12,7 @@ interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\Ev
     public function setLogger(LoggerInterface $logger);
 
     /**
-     * @param ContextDataInterface $contextData
+     * @param string $contextName
      */
-    public function setContextData(ContextDataInterface $contextData);
+    public function setContextName(string $contextName);
 }
