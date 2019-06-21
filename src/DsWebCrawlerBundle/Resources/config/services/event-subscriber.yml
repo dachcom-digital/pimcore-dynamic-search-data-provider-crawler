@@ -5,7 +5,6 @@ services:
         autoconfigure: true
         public: false
 
-
     DsWebCrawlerBundle\EventSubscriber\LogEventSubscriber:
         tags:
             - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }

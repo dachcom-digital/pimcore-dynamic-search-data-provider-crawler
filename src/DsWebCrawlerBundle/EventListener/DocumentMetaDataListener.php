@@ -30,8 +30,11 @@ class DocumentMetaDataListener
      * @param DocumentResolver             $documentResolver
      * @param HeadMeta                     $headMeta
      */
-    public function __construct(CrawlerStateServiceInterface $crawlerState, DocumentResolver $documentResolver, HeadMeta $headMeta)
-    {
+    public function __construct(
+        CrawlerStateServiceInterface $crawlerState,
+        DocumentResolver $documentResolver,
+        HeadMeta $headMeta
+    ) {
         $this->crawlerState = $crawlerState;
         $this->documentResolver = $documentResolver;
         $this->headMeta = $headMeta;
@@ -46,16 +49,15 @@ class DocumentMetaDataListener
             return;
         }
 
-        $request = $event->getRequest();
-
         if (!$event->isMasterRequest()) {
             return;
         }
 
+        $request = $event->getRequest();
         $document = $this->documentResolver->getDocument($request);
 
         if ($document instanceof Page) {
-            $this->headMeta->addRaw('<meta name="dynamic-search:documentId" content="' . $document->getId() . '" />');
+            $this->headMeta->addRaw('<meta name="dynamic-search:page-id" content="' . $document->getId() . '" />');
         }
     }
 }

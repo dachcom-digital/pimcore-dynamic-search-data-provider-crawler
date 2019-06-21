@@ -8,7 +8,7 @@ use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class LanguageExtractor implements FieldTransformerInterface
+class DocumentIdExtractor implements FieldTransformerInterface
 {
     /**
      * {@inheritDoc}
@@ -27,14 +27,21 @@ class LanguageExtractor implements FieldTransformerInterface
             return null;
         }
 
-        $value = 'all';
+        $value = null;
         if ($transformedData->hasDataAttribute('asset_meta')) {
             $assetMeta = $transformedData->getDataAttribute('asset_meta');
-            if (is_array($assetMeta) && is_string($assetMeta['language'])) {
-                $value = $assetMeta['language'];
+            if (is_array($assetMeta) && !empty($assetMeta['id'])) {
+                $value = $assetMeta['id'];
             }
         }
 
+        if ($value === null) {
+            return null;
+        }
+
+        $value = sprintf('asset_%d', $value);
+
         return new FieldContainer($value);
+
     }
 }

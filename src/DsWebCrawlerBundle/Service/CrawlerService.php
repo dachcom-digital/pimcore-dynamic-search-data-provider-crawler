@@ -5,6 +5,7 @@ namespace DsWebCrawlerBundle\Service;
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 use DsWebCrawlerBundle\Registry\EventSubscriberRegistryInterface;
+use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use GuzzleHttp\Client;
 use DsWebCrawlerBundle\Configuration\Configuration;
@@ -48,14 +49,24 @@ class CrawlerService implements CrawlerServiceInterface
     protected $logger;
 
     /**
+     * @var string
+     */
+    protected $contextName;
+
+    /**
+     * @var string
+     */
+    protected $contextDispatchType;
+
+    /**
      * @var array
      */
     protected $providerConfiguration;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $contextName;
+    protected $runtimeOptions;
 
     /**
      * @param EventSubscriberRegistryInterface $eventSubscriberRegistry
@@ -72,11 +83,13 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function init(LoggerInterface $logger, string $contextName, array $providerConfiguration)
+    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeOptions = [])
     {
         $this->logger = $logger;
         $this->contextName = $contextName;
+        $this->contextDispatchType = $contextDispatchType;
         $this->providerConfiguration = $providerConfiguration;
+        $this->runtimeOptions = $runtimeOptions;
     }
 
     /**
@@ -110,8 +123,8 @@ class CrawlerService implements CrawlerServiceInterface
             return;
         }
 
-        if ($this->getOption('max_download_limit') > 0) {
-            $this->getSpiderDownloader()->setDownloadLimit($this->getOption('max_download_limit'));
+        if ($this->getOption('max_crawl_limit') > 0) {
+            $this->getSpiderDownloader()->setDownloadLimit($this->getOption('max_crawl_limit'));
         }
 
         if ($this->getOption('content_max_size') !== 0) {
@@ -182,6 +195,8 @@ class CrawlerService implements CrawlerServiceInterface
 
                 $typeEventSubscriber->setLogger($this->logger);
                 $typeEventSubscriber->setContextName($this->contextName);
+                $typeEventSubscriber->setContextDispatchType($this->contextDispatchType);
+                $typeEventSubscriber->setRuntimeOptions($this->runtimeOptions);
 
                 switch ($dispatcherType) {
                     case 'spider':
@@ -269,9 +284,53 @@ class CrawlerService implements CrawlerServiceInterface
     {
         if ($key === 'invalid_links') {
             return $this->getInvalidLinks();
+        } elseif ($key === 'max_crawl_limit') {
+            return $this->getMaxCrawlLimit();
+        } elseif ($key === 'seed') {
+            return $this->getSeed();
         }
 
         return $this->providerConfiguration[$key];
+    }
+
+    /**
+     * @return int
+     */
+    protected function getMaxCrawlLimit()
+    {
+        if (in_array($this->contextDispatchType, [
+            ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT,
+            ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE,
+            ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE
+        ], true)) {
+            return 1;
+        }
+
+        return $this->providerConfiguration['max_crawl_limit'];
+    }
+
+    /**
+     * @return string
+     */
+    protected function getSeed()
+    {
+        $seed = $this->providerConfiguration['seed'];
+
+        if (in_array($this->contextDispatchType, [
+            ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT,
+            ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE,
+            ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE
+        ], true)) {
+            $seedHost = parse_url($seed, PHP_URL_HOST);
+            $seedScheme = parse_url($seed, PHP_URL_SCHEME);
+            return sprintf('%s://%s/%s',
+                $seedScheme,
+                rtrim($seedHost, '/'),
+                ltrim($this->runtimeOptions['path'], '/')
+            );
+        }
+
+        return $seed;
     }
 
     /**

@@ -10,7 +10,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource;
 
-class TitleExtractor implements FieldTransformerInterface
+class DocumentIdExtractor implements FieldTransformerInterface
 {
     /**
      * {@inheritDoc}
@@ -29,7 +29,7 @@ class TitleExtractor implements FieldTransformerInterface
             return null;
         }
 
-         /** @var Resource $resource */
+        /** @var Resource $resource */
         $resource = $transformedData->getDataAttribute('resource');
 
         /** @var Crawler $crawler */
@@ -37,11 +37,25 @@ class TitleExtractor implements FieldTransformerInterface
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
 
-        if ($crawler->filterXpath('//title')->count() === 0) {
+        $value = null;
+        $documentType = null;
+
+        $objectQuery = '//meta[@name="dynamic-search:object-id"]';
+        $pageQuery = '//meta[@name="dynamic-search:page-id"]';
+
+        if ($crawler->filterXpath($objectQuery)->count() > 0) {
+            $documentType = 'object';
+            $value = (string) $crawler->filterXpath($objectQuery)->attr('content');
+        } elseif ($crawler->filterXpath($pageQuery)->count() > 0) {
+            $documentType = 'page';
+            $value = (string) $crawler->filterXpath($pageQuery)->attr('content');
+        }
+
+        if (empty($value)) {
             return null;
         }
 
-        $value = (string) $crawler->filterXpath('//title')->text();
+        $value = sprintf('%s_%d', $documentType, $value);
 
         return new FieldContainer($value);
 

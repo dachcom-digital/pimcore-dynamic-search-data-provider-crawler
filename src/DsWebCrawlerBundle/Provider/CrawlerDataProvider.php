@@ -2,9 +2,11 @@
 
 namespace DsWebCrawlerBundle\Provider;
 
+use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\Service\CrawlerServiceInterface;
 use DsWebCrawlerBundle\Service\FileWatcherServiceInterface;
 use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Exception\ProviderException;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -79,6 +81,8 @@ class CrawlerDataProvider implements DataProviderInterface
      */
     public function cancelledShutdown(ContextDataInterface $contextData)
     {
+        $this->fileWatcherService->resetPersistenceStore();
+        $this->fileWatcherService->resetUriFilterPersistenceStore();
     }
 
     /**
@@ -86,6 +90,8 @@ class CrawlerDataProvider implements DataProviderInterface
      */
     public function emergencyShutdown(ContextDataInterface $contextData)
     {
+        $this->fileWatcherService->resetPersistenceStore();
+        $this->fileWatcherService->resetUriFilterPersistenceStore();
     }
 
     /**
@@ -93,7 +99,10 @@ class CrawlerDataProvider implements DataProviderInterface
      */
     public function execute(ContextDataInterface $contextData)
     {
-        $this->crawlerService->init($this->logger, $contextData->getName(), $this->configuration);
+        $runtimeOptions = $this->validateRuntimeOptions($contextData->getDispatchType(), $contextData->getRuntimeOptions());
+
+        // parse runtime options
+        $this->crawlerService->init($this->logger, $contextData->getName(), $contextData->getDispatchType(), $this->configuration, $runtimeOptions);
         $this->crawlerService->process();
     }
 
@@ -108,13 +117,12 @@ class CrawlerDataProvider implements DataProviderInterface
             'allow_subdomains'   => false,
             'allow_query_in_url' => false,
             'allow_hash_in_url'  => false,
-            'categories'         => null,
             'valid_links'        => [],
             'user_invalid_links' => [],
             'allowed_mime_types' => ['text/html', 'application/pdf'],
             'allowed_schemes'    => ['http'],
             'max_link_depth'     => 15,
-            'max_download_limit' => 0,
+            'max_crawl_limit'    => 0,
             'content_max_size'   => 0,
             'core_invalid_links' => '@.*\.(js|JS|gif|GIF|jpg|JPG|png|PNG|ico|ICO|eps|jpeg|JPEG|bmp|BMP|css|CSS|sit|wmf|zip|ppt|mpg|xls|gz|rpm|tgz|mov|MOV|exe|mp3|MP3|kmz|gpx|kml|swf|SWF)$@'
         ];
@@ -126,15 +134,54 @@ class CrawlerDataProvider implements DataProviderInterface
         $resolver->setAllowedTypes('allow_subdomains', ['bool']);
         $resolver->setAllowedTypes('allow_query_in_url', ['bool']);
         $resolver->setAllowedTypes('allow_hash_in_url', ['bool']);
-        $resolver->setAllowedTypes('categories', ['string', 'null']);
         $resolver->setAllowedTypes('valid_links', ['string[]']);
         $resolver->setAllowedTypes('user_invalid_links', ['string[]']);
         $resolver->setAllowedTypes('allowed_mime_types', ['string[]']);
         $resolver->setAllowedTypes('allowed_schemes', ['string[]']);
         $resolver->setAllowedTypes('max_link_depth', ['int']);
-        $resolver->setAllowedTypes('max_download_limit', ['int']);
+        $resolver->setAllowedTypes('max_crawl_limit', ['int']);
         $resolver->setAllowedTypes('content_max_size', ['int']);
         $resolver->setAllowedTypes('core_invalid_links', ['string']);
         $resolver->setAllowedTypes('seed', ['string']);
     }
+
+    /**
+     * @param string $contextDispatchType
+     * @param array  $runtimeOptions
+     *
+     * @return array
+     * @throws ProviderException
+     */
+    protected function validateRuntimeOptions(string $contextDispatchType, array $runtimeOptions = [])
+    {
+        $errorMessage = null;
+
+        switch ($contextDispatchType) {
+            case ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE:
+                if (!isset($runtimeOptions['path']) || !is_string($runtimeOptions['path'])) {
+                    $errorMessage = 'no "path" runtime option given. needs to be a valid string';
+                }
+                if (!isset($runtimeOptions['id']) || empty($runtimeOptions['id'])) {
+                    $errorMessage = 'no "id" runtime option given. value cannot be empty';
+                }
+                break;
+            case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT:
+                if (!isset($runtimeOptions['path']) || !is_string($runtimeOptions['path'])) {
+                    $errorMessage = 'no "path" runtime option given. needs to be a valid string';
+                }
+                break;
+            case ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE:
+                if (!isset($runtimeOptions['id']) || empty($runtimeOptions['id'])) {
+                    $errorMessage = 'no "id" runtime option given. value cannot be empty';
+                }
+                break;
+        }
+
+        if ($errorMessage !== null) {
+            throw new ProviderException(sprintf('Runtime Options validation failed. Error was: %s', $errorMessage), DsWebCrawlerBundle::PROVIDER_NAME);
+        }
+
+        return $runtimeOptions;
+    }
+
 }

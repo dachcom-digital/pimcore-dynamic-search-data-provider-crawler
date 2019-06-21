@@ -13,6 +13,15 @@ services:
         tags:
             - { name: dynamic_search.transformer.dispatcher, priority: 5, identifier: http_response_pdf }
 
+
+    DsWebCrawlerBundle\Transformer\Field\Html\DocumentIdExtractor:
+        tags:
+            - { name: dynamic_search.transformer.field, identifier: resource_document_id_extractor, data_transformer: http_response_html }
+
+    DsWebCrawlerBundle\Transformer\Field\Pdf\DocumentIdExtractor:
+        tags:
+            - { name: dynamic_search.transformer.field, identifier: resource_document_id_extractor, data_transformer: http_response_pdf }
+
     DsWebCrawlerBundle\Transformer\Field\Common\UriExtractor:
         tags:
             - { name: dynamic_search.transformer.field, identifier: resource_uri_extractor, data_transformer: http_response_html }

@@ -25,6 +25,16 @@ class AbortEventSubscriber implements EventSubscriberInterface
     protected $contextName;
 
     /**
+     * @var string
+     */
+    protected $contextDispatchType;
+
+    /**
+     * @var array
+     */
+    protected $runtimeOptions;
+
+    /**
      * @var LoggerInterface
      */
     protected $logger;
@@ -49,6 +59,22 @@ class AbortEventSubscriber implements EventSubscriberInterface
     public function setContextName(string $contextName)
     {
         $this->contextName = $contextName;
+    }
+
+    /**
+     * @param string $contextDispatchType
+     */
+    public function setContextDispatchType(string $contextDispatchType)
+    {
+        $this->contextDispatchType = $contextDispatchType;
+    }
+
+    /**
+     * @param array $runtimeOptions
+     */
+    public function setRuntimeOptions(array $runtimeOptions = [])
+    {
+        $this->runtimeOptions = $runtimeOptions;
     }
 
     /**

@@ -15,4 +15,14 @@ interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\Ev
      * @param string $contextName
      */
     public function setContextName(string $contextName);
+
+    /**
+     * @param string $contextDispatchType
+     */
+    public function setContextDispatchType(string $contextDispatchType);
+
+    /**
+     * @param array $runtimeOptions
+     */
+    public function setRuntimeOptions(array $runtimeOptions = []);
 }

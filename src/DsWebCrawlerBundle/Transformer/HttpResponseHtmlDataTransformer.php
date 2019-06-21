@@ -85,7 +85,7 @@ class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
                 $this->log('debug', sprintf(
                         'skip indexing [ %s ] because it has canonical link %s',
                         $uri,
-                        $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
+                    (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
                     )
                 );
                 return null;

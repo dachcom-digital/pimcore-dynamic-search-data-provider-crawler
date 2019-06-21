@@ -4,6 +4,7 @@ namespace DsWebCrawlerBundle\EventSubscriber;
 
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
+use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -39,6 +40,16 @@ class LogEventSubscriber implements EventSubscriberInterface
     protected $contextName;
 
     /**
+     * @var string
+     */
+    protected $contextDispatchType;
+
+    /**
+     * @var array
+     */
+    protected $runtimeOptions;
+
+    /**
      * @var LoggerInterface
      */
     protected $logger;
@@ -49,6 +60,22 @@ class LogEventSubscriber implements EventSubscriberInterface
     public function setContextName(string $contextName)
     {
         $this->contextName = $contextName;
+    }
+
+    /**
+     * @param string $contextDispatchType
+     */
+    public function setContextDispatchType(string $contextDispatchType)
+    {
+        $this->contextDispatchType = $contextDispatchType;
+    }
+
+    /**
+     * @param array $runtimeOptions
+     */
+    public function setRuntimeOptions(array $runtimeOptions = [])
+    {
+        $this->runtimeOptions = $runtimeOptions;
     }
 
     /**
@@ -70,12 +97,10 @@ class LogEventSubscriber implements EventSubscriberInterface
             SpiderEvents::SPIDER_CRAWL_POST_ENQUEUE       => 'logQueued',
             SpiderEvents::SPIDER_CRAWL_RESOURCE_PERSISTED => 'logPersisted',
             SpiderEvents::SPIDER_CRAWL_ERROR_REQUEST      => 'logFailed',
-
-            SpiderEvents::SPIDER_CRAWL_POST_REQUEST => 'logCrawled',
-            SpiderEvents::SPIDER_CRAWL_USER_STOPPED => 'logStoppedBySignal',
-
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_START  => 'logStarted',
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH => 'logFinished'
+            SpiderEvents::SPIDER_CRAWL_POST_REQUEST       => 'logCrawled',
+            SpiderEvents::SPIDER_CRAWL_USER_STOPPED       => 'logStoppedBySignal',
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_START      => 'logStarted',
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH     => 'logFinished'
         ];
     }
 
@@ -98,12 +123,23 @@ class LogEventSubscriber implements EventSubscriberInterface
         $seconds = str_pad($totalTime % 60, 2, '0', STR_PAD_LEFT);
         $peakMem = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
 
-        $this->logEvent('finished', $event, 'debug', 'enqueued links: ' . $this->queued);
-        $this->logEvent('finished', $event, 'debug', 'skipped links: ' . $this->filtered);
-        $this->logEvent('finished', $event, 'debug', 'failed links: ' . $this->failed);
-        $this->logEvent('finished', $event, 'debug', 'persisted links: ' . $this->persisted);
-        $this->logEvent('finished', $event, 'debug', 'memory peak usage: ' . $peakMem . 'MB');
-        $this->logEvent('finished', $event, 'debug', 'total time: ' . $minutes . ':' . $seconds);
+        if ($this->queued > 0) {
+            $this->logEvent('finished', $event, 'debug', 'enqueued links: ' . $this->queued);
+        }
+        if ($this->filtered > 0) {
+            $this->logEvent('finished', $event, 'debug', 'skipped links: ' . $this->filtered);
+        }
+        if ($this->failed > 0) {
+            $this->logEvent('finished', $event, 'debug', 'failed links: ' . $this->failed);
+        }
+        if ($this->persisted > 0) {
+            $this->logEvent('finished', $event, 'debug', 'persisted links: ' . $this->persisted);
+        }
+
+        if ($this->contextDispatchType === ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
+            $this->logEvent('finished', $event, 'debug', 'memory peak usage: ' . $peakMem . 'MB');
+            $this->logEvent('finished', $event, 'debug', 'total time: ' . $minutes . ':' . $seconds);
+        }
     }
 
     /**

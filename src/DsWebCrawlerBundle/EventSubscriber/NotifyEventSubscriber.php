@@ -18,6 +18,16 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     protected $contextName;
 
     /**
+     * @var string
+     */
+    protected $contextDispatchType;
+
+    /**
+     * @var array
+     */
+    protected $runtimeOptions;
+
+    /**
      * @var LoggerInterface
      */
     protected $logger;
@@ -41,6 +51,22 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     public function setContextName(string $contextName)
     {
         $this->contextName = $contextName;
+    }
+
+    /**
+     * @param string $contextDispatchType
+     */
+    public function setContextDispatchType(string $contextDispatchType)
+    {
+        $this->contextDispatchType = $contextDispatchType;
+    }
+
+    /**
+     * @param array $runtimeOptions
+     */
+    public function setRuntimeOptions(array $runtimeOptions = [])
+    {
+        $this->runtimeOptions = $runtimeOptions;
     }
 
     /**
@@ -78,11 +104,11 @@ class NotifyEventSubscriber implements EventSubscriberInterface
         /** @var \VDB\Spider\Resource $rawContent */
         $rawContent = unserialize($resourceContent);
 
-        if(!$rawContent instanceof Resource) {
+        if (!$rawContent instanceof Resource) {
             return;
         }
 
-        $newDataEvent = new NewDataEvent($this->contextName, $rawContent);
+        $newDataEvent = new NewDataEvent($this->contextDispatchType, $this->contextName, $rawContent, $this->runtimeOptions);
 
         $this->eventDispatcher->dispatch(DynamicSearchEvents::NEW_DATA_AVAILABLE, $newDataEvent);
 

@@ -43,7 +43,7 @@ class MetaExtractor implements FieldTransformerInterface
             return null;
         }
 
-        $value = $crawler->filterXpath($query)->attr('content');
+        $value = (string) $crawler->filterXpath($query)->attr('content');
 
         return new FieldContainer($value);
 
