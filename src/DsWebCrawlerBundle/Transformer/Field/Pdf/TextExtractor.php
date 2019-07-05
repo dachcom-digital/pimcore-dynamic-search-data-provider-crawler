@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Pdf;
 
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\Container\FieldContainer;
 use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
@@ -10,6 +10,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TextExtractor implements FieldTransformerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     /**
      * {@inheritDoc}
      */
@@ -21,11 +26,19 @@ class TextExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(array $options, string $dispatchTransformerName, DataContainerInterface $transformedData): ?FieldContainerInterface
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
     {
         $value = null;
-        if ($transformedData->hasDataAttribute('pdf_content')) {
-            $value = $transformedData->getDataAttribute('pdf_content');
+        if ($transformedData->hasAttribute('pdf_content')) {
+            $value = $transformedData->getAttribute('pdf_content');
         }
 
         if (empty($value)) {

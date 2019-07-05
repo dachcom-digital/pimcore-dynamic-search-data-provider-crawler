@@ -22,7 +22,7 @@ interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\Ev
     public function setContextDispatchType(string $contextDispatchType);
 
     /**
-     * @param array $runtimeOptions
+     * @param array $runtimeValues
      */
-    public function setRuntimeOptions(array $runtimeOptions = []);
+    public function setRuntimeValues(array $runtimeValues = []);
 }

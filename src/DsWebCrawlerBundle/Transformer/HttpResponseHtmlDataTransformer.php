@@ -5,13 +5,13 @@ namespace DsWebCrawlerBundle\Transformer;
 use DOMDocument;
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
-use DynamicSearchBundle\Transformer\Container\DataContainer;
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
-use DynamicSearchBundle\Transformer\DispatchTransformerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainer;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
+use DynamicSearchBundle\Transformer\DocumentTransformerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use VDB\Spider\Resource as DataResource;
 
-class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
+class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
 {
     /**
      * @var ContextDataInterface
@@ -26,13 +26,13 @@ class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function isApplicable($data): bool
+    public function isApplicable($resource): bool
     {
-        if (!$data instanceof DataResource) {
+        if (!$resource instanceof DataResource) {
             return false;
         }
 
-        $contentTypeInfo = $data->getResponse()->getHeaderLine('Content-Type');
+        $contentTypeInfo = $resource->getResponse()->getHeaderLine('Content-Type');
         $parts = explode(';', $contentTypeInfo);
         $mimeType = trim($parts[0]);
 
@@ -54,12 +54,13 @@ class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(ContextDataInterface $contextData, $data): ?DataContainerInterface
+    public function transformData(ContextDataInterface $contextData, $resource): ?DocumentContainerInterface
     {
         $this->contextData = $contextData;
 
-        /** @var DataResource $resource */
-        $resource = $data;
+        if (!$resource instanceof DataResource) {
+            return null;
+        }
 
         $host = $resource->getUri()->getHost();
         $uri = $resource->getUri()->toString();
@@ -67,7 +68,7 @@ class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
         $statusCode = $resource->getResponse()->getStatusCode();
 
         if ($statusCode !== 200) {
-            $this->log('debug', sprintf('skip indexing [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
+            $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
             return null;
         }
 
@@ -83,9 +84,9 @@ class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
         if ($hasCanonicalLink === true) {
             if ($uri != $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')) {
                 $this->log('debug', sprintf(
-                        'skip indexing [ %s ] because it has canonical link %s',
+                        'skip transform [ %s ] because it has canonical link %s',
                         $uri,
-                    (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
+                        (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
                     )
                 );
                 return null;
@@ -96,19 +97,18 @@ class HttpResponseHtmlDataTransformer implements DispatchTransformerInterface
         $hasNoIndex = $crawler->filterXpath('//meta[contains(@content, "noindex")]')->count() > 0;
 
         if ($hasNoIndex === true) {
-            $this->log('debug', sprintf('skip indexing [ %s ] because it has a noindex tag', $uri));
+            $this->log('debug', sprintf('skip transform [ %s ] because it has a noindex tag', $uri));
             return null;
         }
 
         $doc = $this->generateDomDocument($html);
         $html = $this->extractHtml($doc);
 
-        return new DataContainer([
+        return new DocumentContainer($resource, [
             'uri'      => $uri,
             'host'     => $host,
             'doc'      => $doc,
-            'html'     => $html,
-            'resource' => $data,
+            'html'     => $html
         ]);
     }
 

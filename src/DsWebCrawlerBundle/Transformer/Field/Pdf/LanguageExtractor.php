@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Pdf;
 
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\Container\FieldContainer;
 use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
@@ -10,6 +10,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class LanguageExtractor implements FieldTransformerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     /**
      * {@inheritDoc}
      */
@@ -21,15 +26,23 @@ class LanguageExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(array $options, string $dispatchTransformerName, DataContainerInterface $transformedData): ?FieldContainerInterface
+    public function setOptions(array $options)
     {
-        if (!$transformedData->hasDataAttribute('resource')) {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    {
+        if (!$transformedData->hasResource()) {
             return null;
         }
 
         $value = 'all';
-        if ($transformedData->hasDataAttribute('asset_meta')) {
-            $assetMeta = $transformedData->getDataAttribute('asset_meta');
+        if ($transformedData->hasAttribute('asset_meta')) {
+            $assetMeta = $transformedData->getAttribute('asset_meta');
             if (is_array($assetMeta) && is_string($assetMeta['language'])) {
                 $value = $assetMeta['language'];
             }

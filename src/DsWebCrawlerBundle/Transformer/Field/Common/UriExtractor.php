@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Common;
 
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\Container\FieldContainer;
 use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
@@ -12,23 +12,37 @@ use VDB\Spider\Resource;
 class UriExtractor implements FieldTransformerInterface
 {
     /**
+     * @var array
+     */
+    protected $options;
+
+    /**
      * {@inheritDoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
+        return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function transformData(array $options, string $dispatchTransformerName, DataContainerInterface $transformedData): ?FieldContainerInterface
+    public function setOptions(array $options)
     {
-        if (!$transformedData->hasDataAttribute('resource')) {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    {
+        if (!$transformedData->hasResource()) {
             return null;
         }
 
         /** @var Resource $resource */
-        $resource = $transformedData->getDataAttribute('resource');
+        $resource = $transformedData->getResource();
 
         $value = $resource->getUri()->toString();
 

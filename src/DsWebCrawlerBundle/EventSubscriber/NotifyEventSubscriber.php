@@ -25,7 +25,7 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     /**
      * @var array
      */
-    protected $runtimeOptions;
+    protected $runtimeValues;
 
     /**
      * @var LoggerInterface
@@ -62,11 +62,11 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param array $runtimeOptions
+     * {@inheritDoc}
      */
-    public function setRuntimeOptions(array $runtimeOptions = [])
+    public function setRuntimeValues(array $runtimeValues = [])
     {
-        $this->runtimeOptions = $runtimeOptions;
+        $this->runtimeValues = $runtimeValues;
     }
 
     /**
@@ -108,7 +108,7 @@ class NotifyEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $newDataEvent = new NewDataEvent($this->contextDispatchType, $this->contextName, $rawContent, $this->runtimeOptions);
+        $newDataEvent = new NewDataEvent($this->contextDispatchType, $this->contextName, $rawContent, $this->runtimeValues);
 
         $this->eventDispatcher->dispatch(DynamicSearchEvents::NEW_DATA_AVAILABLE, $newDataEvent);
 

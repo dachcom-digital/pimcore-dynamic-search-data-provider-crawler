@@ -11,9 +11,9 @@ interface CrawlerServiceInterface
      * @param string          $contextName
      * @param string          $contextDispatchType
      * @param array           $providerConfiguration
-     * @param array           $runtimeOptions
+     * @param array           $runtimeValues
      */
-    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeOptions = []);
+    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeValues = []);
 
     public function process();
 

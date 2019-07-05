@@ -32,7 +32,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
     /**
      * @var array
      */
-    protected $runtimeOptions;
+    protected $runtimeValues;
 
     /**
      * @var LoggerInterface
@@ -70,11 +70,11 @@ class AbortEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param array $runtimeOptions
+     * {@inheritDoc}
      */
-    public function setRuntimeOptions(array $runtimeOptions = [])
+    public function setRuntimeValues(array $runtimeValues = [])
     {
-        $this->runtimeOptions = $runtimeOptions;
+        $this->runtimeValues = $runtimeValues;
     }
 
     /**

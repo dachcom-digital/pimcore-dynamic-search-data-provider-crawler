@@ -99,10 +99,10 @@ class CrawlerDataProvider implements DataProviderInterface
      */
     public function execute(ContextDataInterface $contextData)
     {
-        $runtimeOptions = $this->validateRuntimeOptions($contextData->getDispatchType(), $contextData->getRuntimeOptions());
+        $runtimeValues = $this->validateRuntimeValues($contextData->getContextDispatchType(), $contextData->getRuntimeValues());
 
         // parse runtime options
-        $this->crawlerService->init($this->logger, $contextData->getName(), $contextData->getDispatchType(), $this->configuration, $runtimeOptions);
+        $this->crawlerService->init($this->logger, $contextData->getName(), $contextData->getContextDispatchType(), $this->configuration, $runtimeValues);
         $this->crawlerService->process();
     }
 
@@ -147,32 +147,24 @@ class CrawlerDataProvider implements DataProviderInterface
 
     /**
      * @param string $contextDispatchType
-     * @param array  $runtimeOptions
+     * @param array  $runtimeValues
      *
      * @return array
      * @throws ProviderException
      */
-    protected function validateRuntimeOptions(string $contextDispatchType, array $runtimeOptions = [])
+    protected function validateRuntimeValues(string $contextDispatchType, array $runtimeValues = [])
     {
         $errorMessage = null;
 
         switch ($contextDispatchType) {
             case ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE:
-                if (!isset($runtimeOptions['path']) || !is_string($runtimeOptions['path'])) {
+                if (!isset($runtimeValues['path']) || !is_string($runtimeValues['path'])) {
                     $errorMessage = 'no "path" runtime option given. needs to be a valid string';
-                }
-                if (!isset($runtimeOptions['id']) || empty($runtimeOptions['id'])) {
-                    $errorMessage = 'no "id" runtime option given. value cannot be empty';
                 }
                 break;
             case ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT:
-                if (!isset($runtimeOptions['path']) || !is_string($runtimeOptions['path'])) {
+                if (!isset($runtimeValues['path']) || !is_string($runtimeValues['path'])) {
                     $errorMessage = 'no "path" runtime option given. needs to be a valid string';
-                }
-                break;
-            case ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE:
-                if (!isset($runtimeOptions['id']) || empty($runtimeOptions['id'])) {
-                    $errorMessage = 'no "id" runtime option given. value cannot be empty';
                 }
                 break;
         }
@@ -181,7 +173,7 @@ class CrawlerDataProvider implements DataProviderInterface
             throw new ProviderException(sprintf('Runtime Options validation failed. Error was: %s', $errorMessage), DsWebCrawlerBundle::PROVIDER_NAME);
         }
 
-        return $runtimeOptions;
+        return $runtimeValues;
     }
 
 }

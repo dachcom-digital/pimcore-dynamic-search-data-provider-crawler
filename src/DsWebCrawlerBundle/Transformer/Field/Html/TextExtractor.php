@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Html;
 
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\Container\FieldContainer;
 use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
@@ -10,6 +10,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TextExtractor implements FieldTransformerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     /**
      * {@inheritDoc}
      */
@@ -34,19 +39,27 @@ class TextExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(array $options, string $dispatchTransformerName, DataContainerInterface $transformedData): ?FieldContainerInterface
+    public function setOptions(array $options)
     {
-        if (!$transformedData->hasDataAttribute('html')) {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    {
+        if (!$transformedData->hasAttribute('html')) {
             return null;
         }
 
-        if (!$transformedData->hasDataAttribute('resource')) {
+        if (!$transformedData->hasResource()) {
             return null;
         }
 
-        $html = $transformedData->getDataAttribute('html');
+        $html = $transformedData->getAttribute('html');
 
-        $content = $this->extract($options, $html);
+        $content = $this->extract($this->options, $html);
         $content = $this->cleanHtml($content);
 
         return new FieldContainer($content);

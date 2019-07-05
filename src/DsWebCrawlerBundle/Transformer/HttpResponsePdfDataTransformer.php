@@ -4,14 +4,14 @@ namespace DsWebCrawlerBundle\Transformer;
 
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
-use DynamicSearchBundle\Transformer\Container\DataContainer;
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
-use DynamicSearchBundle\Transformer\DispatchTransformerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainer;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
+use DynamicSearchBundle\Transformer\DocumentTransformerInterface;
 use Pimcore\Document\Adapter\Ghostscript;
 use Pimcore\Model\Asset;
 use VDB\Spider\Resource as DataResource;
 
-class HttpResponsePdfDataTransformer implements DispatchTransformerInterface
+class HttpResponsePdfDataTransformer implements DocumentTransformerInterface
 {
     /**
      * @var ContextDataInterface
@@ -26,13 +26,13 @@ class HttpResponsePdfDataTransformer implements DispatchTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function isApplicable($data): bool
+    public function isApplicable($resource): bool
     {
-        if (!$data instanceof DataResource) {
+        if (!$resource instanceof DataResource) {
             return false;
         }
 
-        $contentTypeInfo = $data->getResponse()->getHeaderLine('Content-Type');
+        $contentTypeInfo = $resource->getResponse()->getHeaderLine('Content-Type');
         $parts = explode(';', $contentTypeInfo);
         $mimeType = trim($parts[0]);
 
@@ -54,12 +54,13 @@ class HttpResponsePdfDataTransformer implements DispatchTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(ContextDataInterface $contextData, $data): ?DataContainerInterface
+    public function transformData(ContextDataInterface $contextData, $resource): ?DocumentContainerInterface
     {
         $this->contextData = $contextData;
 
-        /** @var DataResource $resource */
-        $resource = $data;
+        if (!$resource instanceof DataResource) {
+            return null;
+        }
 
         $host = $resource->getUri()->getHost();
         $uri = $resource->getUri()->toString();
@@ -67,7 +68,7 @@ class HttpResponsePdfDataTransformer implements DispatchTransformerInterface
         $statusCode = $resource->getResponse()->getStatusCode();
 
         if ($statusCode !== 200) {
-            $this->log('debug', sprintf('skip indexing [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
+            $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
             return null;
         }
 
@@ -77,12 +78,11 @@ class HttpResponsePdfDataTransformer implements DispatchTransformerInterface
             return null;
         }
 
-        return new DataContainer([
+        return new DocumentContainer($resource, [
             'uri'         => $uri,
             'host'        => $host,
             'pdf_content' => $pdfData['pdfContent'],
-            'asset_meta'  => $pdfData['assetMeta'],
-            'resource'    => $data,
+            'asset_meta'  => $pdfData['assetMeta']
         ]);
     }
 

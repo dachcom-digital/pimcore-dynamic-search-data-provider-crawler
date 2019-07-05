@@ -47,7 +47,7 @@ class LogEventSubscriber implements EventSubscriberInterface
     /**
      * @var array
      */
-    protected $runtimeOptions;
+    protected $runtimeValues;
 
     /**
      * @var LoggerInterface
@@ -71,11 +71,11 @@ class LogEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param array $runtimeOptions
+     * {@inheritDoc}
      */
-    public function setRuntimeOptions(array $runtimeOptions = [])
+    public function setRuntimeValues(array $runtimeValues = [])
     {
-        $this->runtimeOptions = $runtimeOptions;
+        $this->runtimeValues = $runtimeValues;
     }
 
     /**
@@ -109,6 +109,11 @@ class LogEventSubscriber implements EventSubscriberInterface
      */
     public function logStarted(GenericEvent $event)
     {
+        $this->queued = 0;
+        $this->filtered = 0;
+        $this->failed = 0;
+        $this->persisted = 0;
+
         $this->startedTime = microtime(true);
     }
 

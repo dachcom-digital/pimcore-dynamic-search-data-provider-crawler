@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Html;
 
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\Container\FieldContainer;
 use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
@@ -12,6 +12,11 @@ use VDB\Spider\Resource;
 
 class MetaExtractor implements FieldTransformerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     /**
      * {@inheritDoc}
      */
@@ -24,21 +29,29 @@ class MetaExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(array $options, string $dispatchTransformerName, DataContainerInterface $transformedData): ?FieldContainerInterface
+    public function setOptions(array $options)
     {
-        if (!$transformedData->hasDataAttribute('resource')) {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    {
+        if (!$transformedData->hasResource()) {
             return null;
         }
 
         /** @var Resource $resource */
-        $resource = $transformedData->getDataAttribute('resource');
+        $resource = $transformedData->getResource();
 
         /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
 
-        $query = sprintf('//meta[@name="%s"]', $options['name']);
+        $query = sprintf('//meta[@name="%s"]', $this->options['name']);
         if ($crawler->filterXpath($query)->count() === 0) {
             return null;
         }

@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Html;
 
-use DynamicSearchBundle\Transformer\Container\DataContainerInterface;
+use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\Container\FieldContainer;
 use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
@@ -12,6 +12,11 @@ use VDB\Spider\Resource;
 
 class HtmlTagExtractor implements FieldTransformerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     /**
      * {@inheritDoc}
      */
@@ -31,21 +36,29 @@ class HtmlTagExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(array $options, string $dispatchTransformerName, DataContainerInterface $transformedData): ?FieldContainerInterface
+    public function setOptions(array $options)
     {
-        if (!$transformedData->hasDataAttribute('resource')) {
+        $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    {
+        if (!$transformedData->hasAttribute('resource')) {
             return null;
         }
 
         /** @var Resource $resource */
-        $resource = $transformedData->getDataAttribute('resource');
+        $resource = $transformedData->getAttribute('resource');
 
         /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
 
-        $query = sprintf('//%s', $options['tag']);
+        $query = sprintf('//%s', $this->options['tag']);
         if ($crawler->filterXpath($query)->count() === 0) {
             return null;
         }
@@ -56,7 +69,7 @@ class HtmlTagExtractor implements FieldTransformerInterface
             return trim(preg_replace('/\s+/', ' ', $node->text()));
         });
 
-        if ($options['return_multiple'] === true) {
+        if ($this->options['return_multiple'] === true) {
             $value = $tagElements;
         } else {
             $value = $tagElements[0];

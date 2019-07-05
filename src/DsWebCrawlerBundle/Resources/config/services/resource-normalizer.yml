@@ -1,0 +1,14 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    DsWebCrawlerBundle\Normalizer\ResourceNormalizer:
+        tags:
+            - { name: dynamic_search.resource_normalizer, identifier: 'webCrawlerResourceNormalizer', data_provider: 'webCrawler' }
+
+    DsWebCrawlerBundle\Normalizer\ResourceIdBuilder:
+        tags:
+            - { name: dynamic_search.resource_id_builder, identifier: 'webCrawlerResourceIdBuilder', data_provider: 'webCrawler' }

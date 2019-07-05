@@ -6,6 +6,7 @@ use DsWebCrawlerBundle\Service\CrawlerStateServiceInterface;
 use Pimcore\Http\Request\Resolver\DocumentResolver;
 use Pimcore\Model\Document\Page;
 use Pimcore\Templating\Helper\HeadMeta;
+use Symfony\Cmf\Bundle\RoutingBundle\Routing\DynamicRouter;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 
 class DocumentMetaDataListener
@@ -54,6 +55,15 @@ class DocumentMetaDataListener
         }
 
         $request = $event->getRequest();
+        if (!$request->attributes->has('_route')) {
+            return;
+        }
+
+        $str = 'document_';
+        if (substr($request->attributes->get('_route'), 0, strlen($str)) !== $str) {
+            return;
+        }
+
         $document = $this->documentResolver->getDocument($request);
 
         if ($document instanceof Page) {

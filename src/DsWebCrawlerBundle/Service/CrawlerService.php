@@ -66,7 +66,7 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * @var array
      */
-    protected $runtimeOptions;
+    protected $runtimeValues;
 
     /**
      * @param EventSubscriberRegistryInterface $eventSubscriberRegistry
@@ -83,13 +83,13 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeOptions = [])
+    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeValues = [])
     {
         $this->logger = $logger;
         $this->contextName = $contextName;
         $this->contextDispatchType = $contextDispatchType;
         $this->providerConfiguration = $providerConfiguration;
-        $this->runtimeOptions = $runtimeOptions;
+        $this->runtimeValues = $runtimeValues;
     }
 
     /**
@@ -196,7 +196,7 @@ class CrawlerService implements CrawlerServiceInterface
                 $typeEventSubscriber->setLogger($this->logger);
                 $typeEventSubscriber->setContextName($this->contextName);
                 $typeEventSubscriber->setContextDispatchType($this->contextDispatchType);
-                $typeEventSubscriber->setRuntimeOptions($this->runtimeOptions);
+                $typeEventSubscriber->setRuntimeValues($this->runtimeValues);
 
                 switch ($dispatcherType) {
                     case 'spider':
@@ -326,7 +326,7 @@ class CrawlerService implements CrawlerServiceInterface
             return sprintf('%s://%s/%s',
                 $seedScheme,
                 rtrim($seedHost, '/'),
-                ltrim($this->runtimeOptions['path'], '/')
+                ltrim($this->runtimeValues['path'], '/')
             );
         }
 
