@@ -5,6 +5,7 @@ namespace DsWebCrawlerBundle\Normalizer;
 use DynamicSearchBundle\Manager\TransformerManagerInterface;
 use DynamicSearchBundle\Normalizer\ResourceIdBuilderInterface;
 use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\Element\ElementInterface;
@@ -150,6 +151,10 @@ class ResourceIdBuilder implements ResourceIdBuilderInterface
         } elseif ($resource instanceof Page) {
             $documentType = 'page';
             $id = $resource->getId();
+        } elseif ($resource instanceof Asset\Document) {
+            $documentType = 'asset';
+            $id = $resource->getId();
+            $locale = null;
         }
 
         if ($documentType === null) {
