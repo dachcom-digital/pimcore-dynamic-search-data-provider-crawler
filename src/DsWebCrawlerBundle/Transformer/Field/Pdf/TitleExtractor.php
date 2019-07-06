@@ -2,9 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Pdf;
 
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
-use DynamicSearchBundle\Transformer\Container\FieldContainer;
-use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
+use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource;
@@ -35,18 +33,18 @@ class TitleExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
-        if (!$transformedData->hasResource()) {
+        if (!$resourceContainer->hasResource()) {
             return null;
         }
 
         /** @var Resource $resource */
-        $resource = $transformedData->getResource();
+        $resource = $resourceContainer->getResource();
 
         $value = null;
-        if ($transformedData->hasAttribute('asset_meta')) {
-            $assetMeta = $transformedData->getAttribute('asset_meta');
+        if ($resourceContainer->hasAttribute('asset_meta')) {
+            $assetMeta = $resourceContainer->getAttribute('asset_meta');
             if (is_array($assetMeta) && is_string($assetMeta['key'])) {
                 $value = $assetMeta['key'];
             }
@@ -56,7 +54,7 @@ class TitleExtractor implements FieldTransformerInterface
             $value = basename($resource->getUri()->toString());
         }
 
-        return new FieldContainer($value);
+        return $value;
 
     }
 }

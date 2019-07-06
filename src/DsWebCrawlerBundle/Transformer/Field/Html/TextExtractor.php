@@ -2,9 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Html;
 
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
-use DynamicSearchBundle\Transformer\Container\FieldContainer;
-use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
+use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -47,22 +45,22 @@ class TextExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
-        if (!$transformedData->hasAttribute('html')) {
+        if (!$resourceContainer->hasAttribute('html')) {
             return null;
         }
 
-        if (!$transformedData->hasResource()) {
+        if (!$resourceContainer->hasResource()) {
             return null;
         }
 
-        $html = $transformedData->getAttribute('html');
+        $html = $resourceContainer->getAttribute('html');
 
         $content = $this->extract($this->options, $html);
         $content = $this->cleanHtml($content);
 
-        return new FieldContainer($content);
+        return $content;
 
     }
 

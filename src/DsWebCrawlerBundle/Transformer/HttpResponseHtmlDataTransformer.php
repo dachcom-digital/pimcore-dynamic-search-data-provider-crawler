@@ -5,8 +5,6 @@ namespace DsWebCrawlerBundle\Transformer;
 use DOMDocument;
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
-use DynamicSearchBundle\Transformer\Container\DocumentContainer;
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\DocumentTransformerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use VDB\Spider\Resource as DataResource;
@@ -54,12 +52,12 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(ContextDataInterface $contextData, $resource): ?DocumentContainerInterface
+    public function transformData(ContextDataInterface $contextData, $resource): array
     {
         $this->contextData = $contextData;
 
         if (!$resource instanceof DataResource) {
-            return null;
+            return [];
         }
 
         $host = $resource->getUri()->getHost();
@@ -69,7 +67,7 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
 
         if ($statusCode !== 200) {
             $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
-            return null;
+            return [];
         }
 
         /** @var Crawler $crawler */
@@ -89,7 +87,7 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
                         (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
                     )
                 );
-                return null;
+                return [];
             }
         }
 
@@ -98,18 +96,18 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
 
         if ($hasNoIndex === true) {
             $this->log('debug', sprintf('skip transform [ %s ] because it has a noindex tag', $uri));
-            return null;
+            return [];
         }
 
         $doc = $this->generateDomDocument($html);
         $html = $this->extractHtml($doc);
 
-        return new DocumentContainer($resource, [
+        return [
             'uri'      => $uri,
             'host'     => $host,
             'doc'      => $doc,
             'html'     => $html
-        ]);
+        ];
     }
 
     /**

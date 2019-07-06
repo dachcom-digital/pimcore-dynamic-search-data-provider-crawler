@@ -4,8 +4,6 @@ namespace DsWebCrawlerBundle\Transformer;
 
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
-use DynamicSearchBundle\Transformer\Container\DocumentContainer;
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
 use DynamicSearchBundle\Transformer\DocumentTransformerInterface;
 use Pimcore\Document\Adapter\Ghostscript;
 use Pimcore\Model\Asset;
@@ -54,12 +52,12 @@ class HttpResponsePdfDataTransformer implements DocumentTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(ContextDataInterface $contextData, $resource): ?DocumentContainerInterface
+    public function transformData(ContextDataInterface $contextData, $resource): array
     {
         $this->contextData = $contextData;
 
         if (!$resource instanceof DataResource) {
-            return null;
+            return [];
         }
 
         $host = $resource->getUri()->getHost();
@@ -69,21 +67,21 @@ class HttpResponsePdfDataTransformer implements DocumentTransformerInterface
 
         if ($statusCode !== 200) {
             $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
-            return null;
+            return [];
         }
 
         $pdfData = $this->extractPdfData($resource);
 
         if ($pdfData === null) {
-            return null;
+            return [];
         }
 
-        return new DocumentContainer($resource, [
+        return [
             'uri'         => $uri,
             'host'        => $host,
             'pdf_content' => $pdfData['pdfContent'],
             'asset_meta'  => $pdfData['assetMeta']
-        ]);
+        ];
     }
 
     /**

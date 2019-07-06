@@ -9,7 +9,7 @@ use DynamicSearchBundle\Manager\TransformerManagerInterface;
 use DynamicSearchBundle\Normalizer\Resource\NormalizedDataResource;
 use DynamicSearchBundle\Normalizer\ResourceNormalizerInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
+use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document\Page;
@@ -67,28 +67,28 @@ class ResourceNormalizer implements ResourceNormalizerInterface
     /**
      * {@inheritDoc}
      */
-    public function normalizeToResourceStack(ContextDataInterface $contextData, DocumentContainerInterface $documentContainer): array
+    public function normalizeToResourceStack(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer): array
     {
-        if ($documentContainer->getResource() instanceof SpiderResource) {
-            $resourceId = $this->generateResourceId($documentContainer);
-            return [new NormalizedDataResource($documentContainer, $resourceId)];
+        if ($resourceContainer->getResource() instanceof SpiderResource) {
+            $resourceId = $this->generateResourceId($resourceContainer);
+            return [new NormalizedDataResource($resourceContainer, $resourceId)];
         } elseif ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
-            return $this->onDeletion($documentContainer);
+            return $this->onDeletion($resourceContainer);
         } elseif ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-            return $this->onUpdate($documentContainer, $contextData);
+            return $this->onUpdate($resourceContainer, $contextData);
         }
 
         return [];
     }
 
     /**
-     * @param DocumentContainerInterface $documentContainer
+     * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      */
-    protected function onDeletion(DocumentContainerInterface $documentContainer)
+    protected function onDeletion(ResourceContainerInterface $resourceContainer)
     {
-        $resource = $documentContainer->getResource();
+        $resource = $resourceContainer->getResource();
 
         if (!$resource instanceof ElementInterface) {
             return [];
@@ -108,14 +108,14 @@ class ResourceNormalizer implements ResourceNormalizerInterface
                 }
             }
 
-            $resourceId = $this->generateResourceId($documentContainer, $buildOptions);
+            $resourceId = $this->generateResourceId($resourceContainer, $buildOptions);
 
             return [new NormalizedDataResource(null, $resourceId)];
         }
 
         if ($resource instanceof Asset) {
 
-            $resourceId = $this->generateResourceId($documentContainer);
+            $resourceId = $this->generateResourceId($resourceContainer);
 
             return [new NormalizedDataResource(null, $resourceId)];
         }
@@ -125,11 +125,11 @@ class ResourceNormalizer implements ResourceNormalizerInterface
             $normalizedResources = [];
             if ($this->options['locale_aware_resources'] === true) {
                 foreach (\Pimcore\Tool::getValidLanguages() as $language) {
-                    $resourceId = $this->generateResourceId($documentContainer, ['locale' => $language]);
+                    $resourceId = $this->generateResourceId($resourceContainer, ['locale' => $language]);
                     $normalizedResources[] = new NormalizedDataResource(null, $resourceId);
                 }
             } else {
-                $resourceId = $this->generateResourceId($documentContainer);
+                $resourceId = $this->generateResourceId($resourceContainer);
                 $normalizedResources[] = new NormalizedDataResource(null, $resourceId);
             }
 
@@ -139,14 +139,14 @@ class ResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * @param DocumentContainerInterface $documentContainer
+     * @param ResourceContainerInterface $resourceContainer
      * @param ContextDataInterface       $contextData
      *
      * @return array
      */
-    protected function onUpdate(DocumentContainerInterface $documentContainer, ContextDataInterface $contextData)
+    protected function onUpdate(ResourceContainerInterface $resourceContainer, ContextDataInterface $contextData)
     {
-        $resource = $documentContainer->getResource();
+        $resource = $resourceContainer->getResource();
 
         if (!$resource instanceof ElementInterface) {
             return [];
@@ -159,6 +159,9 @@ class ResourceNormalizer implements ResourceNormalizerInterface
         }
 
         if ($resource instanceof Page) {
+
+            // @todo: Hardlink data detection!
+
             $this->executeCrawl($dataProvider, $contextData, $resource->getRealFullPath());
             return [];
         }
@@ -193,23 +196,23 @@ class ResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * @param DocumentContainerInterface $documentContainer
+     * @param ResourceContainerInterface $resourceContainer
      * @param array                      $buildOptions
      *
      * @return string|null
      */
-    protected function generateResourceId(DocumentContainerInterface $documentContainer, array $buildOptions = [])
+    protected function generateResourceId(ResourceContainerInterface $resourceContainer, array $buildOptions = [])
     {
-        if ($documentContainer->getResource() instanceof SpiderResource) {
-            if ($documentContainer->hasAttribute('html')) {
-                return $this->generateResourceIdFromHtmlResource($documentContainer->getResource());
-            } elseif ($documentContainer->hasAttribute('pdf_content')) {
-                return $this->generateResourceIdFromPdfResource($documentContainer->getAttributes());
+        if ($resourceContainer->getResource() instanceof SpiderResource) {
+            if ($resourceContainer->hasAttribute('html')) {
+                return $this->generateResourceIdFromHtmlResource($resourceContainer->getResource());
+            } elseif ($resourceContainer->hasAttribute('pdf_content')) {
+                return $this->generateResourceIdFromPdfResource($resourceContainer->getAttributes());
             } else {
                 return null;
             }
-        } elseif ($documentContainer->getResource() instanceof ElementInterface) {
-            return $this->generateResourceIdFromPimcoreResource($documentContainer->getResource(), $buildOptions);
+        } elseif ($resourceContainer->getResource() instanceof ElementInterface) {
+            return $this->generateResourceIdFromPimcoreResource($resourceContainer->getResource(), $buildOptions);
         }
 
         return null;

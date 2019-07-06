@@ -7,4 +7,4 @@ services:
 
     DsWebCrawlerBundle\Normalizer\ResourceNormalizer:
         tags:
-            - { name: dynamic_search.resource_normalizer, identifier: 'webCrawlerResourceNormalizer', data_provider: 'webCrawler' }
+            - { name: dynamic_search.resource_normalizer, identifier: web_crawler_resource_normalizer, data_provider: web_crawler }

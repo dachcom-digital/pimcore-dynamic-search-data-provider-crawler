@@ -2,9 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Html;
 
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
-use DynamicSearchBundle\Transformer\Container\FieldContainer;
-use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
+use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -44,14 +42,14 @@ class HtmlTagExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
-        if (!$transformedData->hasAttribute('resource')) {
+        if (!$resourceContainer->hasAttribute('resource')) {
             return null;
         }
 
         /** @var Resource $resource */
-        $resource = $transformedData->getAttribute('resource');
+        $resource = $resourceContainer->getAttribute('resource');
 
         /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
@@ -75,7 +73,7 @@ class HtmlTagExtractor implements FieldTransformerInterface
             $value = $tagElements[0];
         }
 
-        return new FieldContainer($value);
+        return $value;
 
     }
 }

@@ -2,9 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Common;
 
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
-use DynamicSearchBundle\Transformer\Container\FieldContainer;
-use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
+use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource;
@@ -35,18 +33,18 @@ class HostExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
-        if (!$transformedData->hasResource()) {
+        if (!$resourceContainer->hasResource()) {
             return null;
         }
 
         /** @var Resource $resource */
-        $resource = $transformedData->getResource();
+        $resource = $resourceContainer->getResource();
 
         $value = $resource->getUri()->getHost();
 
-        return new FieldContainer($value);
+        return $value;
 
     }
 }

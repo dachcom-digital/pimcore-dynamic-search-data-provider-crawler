@@ -2,9 +2,7 @@
 
 namespace DsWebCrawlerBundle\Transformer\Field\Html;
 
-use DynamicSearchBundle\Transformer\Container\DocumentContainerInterface;
-use DynamicSearchBundle\Transformer\Container\FieldContainer;
-use DynamicSearchBundle\Transformer\Container\FieldContainerInterface;
+use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Transformer\FieldTransformerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -36,14 +34,14 @@ class TitleExtractor implements FieldTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function transformData(string $dispatchTransformerName, DocumentContainerInterface $transformedData): ?FieldContainerInterface
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
-        if (!$transformedData->hasResource()) {
+        if (!$resourceContainer->hasResource()) {
             return null;
         }
 
          /** @var Resource $resource */
-        $resource = $transformedData->getResource();
+        $resource = $resourceContainer->getResource();
 
         /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
@@ -56,7 +54,7 @@ class TitleExtractor implements FieldTransformerInterface
 
         $value = (string) $crawler->filterXpath('//title')->text();
 
-        return new FieldContainer($value);
+        return $value;
 
     }
 }
