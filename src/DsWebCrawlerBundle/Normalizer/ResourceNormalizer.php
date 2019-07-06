@@ -97,6 +97,7 @@ class ResourceNormalizer implements ResourceNormalizerInterface
         if ($resource instanceof Page) {
 
             // @todo: Hardlink data detection!
+            // @todo: Related document detection! (some content parts could be inherited)
 
             $buildOptions = [];
             if ($this->options['locale_aware_resources'] === true) {
@@ -161,6 +162,7 @@ class ResourceNormalizer implements ResourceNormalizerInterface
         if ($resource instanceof Page) {
 
             // @todo: Hardlink data detection!
+            // @todo: Related document detection! (some content parts could be inherited)
 
             $this->executeCrawl($dataProvider, $contextData, $resource->getRealFullPath());
             return [];
