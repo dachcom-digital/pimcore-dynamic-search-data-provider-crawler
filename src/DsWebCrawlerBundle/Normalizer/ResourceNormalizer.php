@@ -7,6 +7,8 @@ use DynamicSearchBundle\Exception\RuntimeException;
 use DynamicSearchBundle\Manager\DataManagerInterface;
 use DynamicSearchBundle\Manager\TransformerManagerInterface;
 use DynamicSearchBundle\Normalizer\Resource\NormalizedDataResource;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMeta;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Normalizer\ResourceNormalizerInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
 use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
@@ -70,85 +72,37 @@ class ResourceNormalizer implements ResourceNormalizerInterface
     public function normalizeToResourceStack(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer): array
     {
         if ($resourceContainer->getResource() instanceof SpiderResource) {
-            $resourceId = $this->generateResourceId($resourceContainer);
-            return [new NormalizedDataResource($resourceContainer, $resourceId)];
-        } elseif ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
-            return $this->onDeletion($resourceContainer);
-        } elseif ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-            return $this->onUpdate($resourceContainer, $contextData);
+            return $this->normalizeSpiderResource($contextData, $resourceContainer);
+        } else {
+            return $this->normalizePimcoreResource($contextData, $resourceContainer);
+        }
+    }
+
+    /**
+     * @param ContextDataInterface       $contextData
+     * @param ResourceContainerInterface $resourceContainer
+     *
+     * @return array
+     */
+    protected function normalizeSpiderResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    {
+        $dataResource = $this->generateDataResource($resourceContainer);
+        if ($dataResource !== null) {
+            return [$dataResource];
         }
 
         return [];
     }
 
     /**
-     * @param ResourceContainerInterface $resourceContainer
-     *
-     * @return array
-     */
-    protected function onDeletion(ResourceContainerInterface $resourceContainer)
-    {
-        $resource = $resourceContainer->getResource();
-
-        if (!$resource instanceof ElementInterface) {
-            return [];
-        }
-
-        if ($resource instanceof Page) {
-
-            // @todo: Hardlink data detection!
-            // @todo: Related document detection! (some content parts could be inherited)
-
-            $buildOptions = [];
-            if ($this->options['locale_aware_resources'] === true) {
-                $documentLocale = $resource->getProperty('language');
-                if (empty($documentLocale)) {
-                    throw new RuntimeException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $resource->getId()));
-                } else {
-                    $buildOptions['locale'] = $documentLocale;
-                }
-            }
-
-            $resourceId = $this->generateResourceId($resourceContainer, $buildOptions);
-
-            return [new NormalizedDataResource(null, $resourceId)];
-        }
-
-        if ($resource instanceof Asset) {
-
-            $resourceId = $this->generateResourceId($resourceContainer);
-
-            return [new NormalizedDataResource(null, $resourceId)];
-        }
-
-        if ($resource instanceof DataObject) {
-
-            $normalizedResources = [];
-            if ($this->options['locale_aware_resources'] === true) {
-                foreach (\Pimcore\Tool::getValidLanguages() as $language) {
-                    $resourceId = $this->generateResourceId($resourceContainer, ['locale' => $language]);
-                    $normalizedResources[] = new NormalizedDataResource(null, $resourceId);
-                }
-            } else {
-                $resourceId = $this->generateResourceId($resourceContainer);
-                $normalizedResources[] = new NormalizedDataResource(null, $resourceId);
-            }
-
-            return $normalizedResources;
-        }
-
-    }
-
-    /**
-     * @param ResourceContainerInterface $resourceContainer
      * @param ContextDataInterface       $contextData
+     * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      */
-    protected function onUpdate(ResourceContainerInterface $resourceContainer, ContextDataInterface $contextData)
+    protected function normalizePimcoreResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
         $resource = $resourceContainer->getResource();
-
         if (!$resource instanceof ElementInterface) {
             return [];
         }
@@ -160,15 +114,98 @@ class ResourceNormalizer implements ResourceNormalizerInterface
         }
 
         if ($resource instanceof Page) {
+            return $this->normalizePage($contextData, $resourceContainer, $dataProvider);
+        }
 
-            // @todo: Hardlink data detection!
-            // @todo: Related document detection! (some content parts could be inherited)
+        if ($resource instanceof Asset) {
+            return $this->normalizeAsset($contextData, $resourceContainer, $dataProvider);
+        }
 
+        if ($resource instanceof DataObject) {
+            return $this->normalizeDataObject($contextData, $resourceContainer, $dataProvider);
+        }
+
+        return [];
+
+    }
+
+    /**
+     * @param ContextDataInterface       $contextData
+     * @param ResourceContainerInterface $resourceContainer
+     * @param DataProviderInterface      $dataProvider
+     *
+     * @return array
+     */
+    protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
+    {
+        $resource = $resourceContainer->getResource();
+        $reCrawlData = $contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE;
+
+        // @todo: Hardlink data detection!
+        // @todo: Related document detection! (some content parts could be inherited)
+
+        if ($reCrawlData === true) {
             $this->executeCrawl($dataProvider, $contextData, $resource->getRealFullPath());
             return [];
         }
 
-        if ($resource instanceof DataObject) {
+        $buildOptions = [];
+        if ($this->options['locale_aware_resources'] === true) {
+            $documentLocale = $resource->getProperty('language');
+            if (empty($documentLocale)) {
+                throw new RuntimeException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $resource->getId()));
+            } else {
+                $buildOptions['locale'] = $documentLocale;
+            }
+        }
+
+        $dataResource = $this->generateDataResource($resourceContainer, $buildOptions);
+        if ($dataResource !== null) {
+            return [$dataResource];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param ContextDataInterface       $contextData
+     * @param ResourceContainerInterface $resourceContainer
+     * @param DataProviderInterface      $dataProvider
+     *
+     * @return array
+     */
+    protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
+    {
+        $resource = $resourceContainer->getResource();
+        $reCrawlData = $contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE;
+
+        if ($reCrawlData === true) {
+            $this->executeCrawl($dataProvider, $contextData, $resource->getRealFullPath());
+            return [];
+        }
+
+        $dataResource = $this->generateDataResource($resourceContainer);
+        if ($dataResource !== null) {
+            return [$dataResource];
+        }
+
+        return [];
+
+    }
+
+    /**
+     * @param ContextDataInterface       $contextData
+     * @param ResourceContainerInterface $resourceContainer
+     * @param DataProviderInterface      $dataProvider
+     *
+     * @return array
+     */
+    protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
+    {
+        $resource = $resourceContainer->getResource();
+        $reCrawlData = $contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE;
+
+        if ($reCrawlData === true) {
 
             /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
             $linkGenerator = $resource->getClass()->getLinkGenerator();
@@ -183,47 +220,81 @@ class ResourceNormalizer implements ResourceNormalizerInterface
             } else {
                 throw new RuntimeException(sprintf('no link generator for object "%d" found. cannot recrawl.', $resource->getId()));
             }
+
+            return [];
+
         }
 
-        return [];
+        $normalizedResources = [];
+        if ($this->options['locale_aware_resources'] === true) {
+            foreach (\Pimcore\Tool::getValidLanguages() as $language) {
+                $dataResource = $this->generateDataResource($resourceContainer, ['locale' => $language]);
+                if ($dataResource !== null) {
+                    $normalizedResources[] = $dataResource;
+                }
+            }
+        } else {
+            $dataResource = $this->generateDataResource($resourceContainer);
+            if ($dataResource !== null) {
+                $normalizedResources[] = $dataResource;
+            }
+        }
+
+        return $normalizedResources;
 
     }
 
+    /**
+     * @param DataProviderInterface $dataProvider
+     * @param ContextDataInterface  $contextData
+     * @param string                $path
+     */
     protected function executeCrawl(DataProviderInterface $dataProvider, ContextDataInterface $contextData, string $path)
     {
         /** @var ContextDataInterface $newContext */
         $newContext = clone $contextData;
         $newContext->updateRuntimeValue('path', $path);
-        $dataProvider->execute($newContext);
+
+        try {
+            $dataProvider->execute($newContext);
+        } catch (\Throwable $e) {
+            throw new RuntimeException(sprintf('Error while re-crawling path "%s". Error was: %s', $path, $e->getMessage()));
+        }
     }
 
     /**
      * @param ResourceContainerInterface $resourceContainer
      * @param array                      $buildOptions
      *
-     * @return string|null
+     * @return null|NormalizedDataResource
      */
-    protected function generateResourceId(ResourceContainerInterface $resourceContainer, array $buildOptions = [])
+    protected function generateDataResource(ResourceContainerInterface $resourceContainer, array $buildOptions = [])
     {
+        $resourceMeta = null;
+
         if ($resourceContainer->getResource() instanceof SpiderResource) {
             if ($resourceContainer->hasAttribute('html')) {
-                return $this->generateResourceIdFromHtmlResource($resourceContainer->getResource());
+                $resourceMeta = $this->generateResourceIdFromHtmlResource($resourceContainer->getResource());
             } elseif ($resourceContainer->hasAttribute('pdf_content')) {
-                return $this->generateResourceIdFromPdfResource($resourceContainer->getAttributes());
+                $resourceMeta = $this->generateResourceIdFromPdfResource($resourceContainer->getAttributes());
             } else {
                 return null;
             }
         } elseif ($resourceContainer->getResource() instanceof ElementInterface) {
-            return $this->generateResourceIdFromPimcoreResource($resourceContainer->getResource(), $buildOptions);
+            $resourceMeta = $this->generateResourceIdFromPimcoreResource($resourceContainer->getResource(), $buildOptions);
         }
 
-        return null;
+        if ($resourceMeta === null) {
+            return null;
+        }
+
+        return new NormalizedDataResource($resourceContainer, $resourceMeta, $buildOptions);
     }
 
     /**
      * @param SpiderResource $resource
      *
-     * @return string|null
+     * @return ResourceMetaInterface|null
      */
     protected function generateResourceIdFromHtmlResource(SpiderResource $resource)
     {
@@ -232,21 +303,25 @@ class ResourceNormalizer implements ResourceNormalizerInterface
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
 
-        $value = null;
-        $documentType = null;
+        $documentId = null;
+        $resourceId = null;
+        $resourceCollectionType = null;
+        $resourceType = null;
 
         $objectQuery = '//meta[@name="dynamic-search:object-id"]';
         $pageQuery = '//meta[@name="dynamic-search:page-id"]';
 
         if ($crawler->filterXpath($objectQuery)->count() > 0) {
-            $documentType = 'object';
-            $value = (string) $crawler->filterXpath($objectQuery)->attr('content');
+            $resourceCollectionType = 'object';
+            $resourceType = 'object'; // @todo: determinate object type?
+            $resourceId = (string) $crawler->filterXpath($objectQuery)->attr('content');
         } elseif ($crawler->filterXpath($pageQuery)->count() > 0) {
-            $documentType = 'page';
-            $value = (string) $crawler->filterXpath($pageQuery)->attr('content');
+            $resourceCollectionType = 'document';
+            $resourceType = 'page';
+            $resourceId = (string) $crawler->filterXpath($pageQuery)->attr('content');
         }
 
-        if (empty($value)) {
+        if (empty($resourceId)) {
             return null;
         }
 
@@ -258,17 +333,19 @@ class ResourceNormalizer implements ResourceNormalizerInterface
                 return null;
             }
 
-            return sprintf('%s_%s_%d', $documentType, $contentLanguage, $value);
+            $documentId = sprintf('%s_%s_%d', $resourceCollectionType, $contentLanguage, $resourceId);
+        } else {
+            $documentId = sprintf('%s_%d', $resourceCollectionType, $resourceId);
         }
 
-        return sprintf('%s_%d', $documentType, $value);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
 
     }
 
     /**
      * @param array $resourceAttributes
      *
-     * @return string|null
+     * @return ResourceMetaInterface|null
      */
     public function generateResourceIdFromPdfResource(array $resourceAttributes)
     {
@@ -283,13 +360,16 @@ class ResourceNormalizer implements ResourceNormalizerInterface
             $value = $assetMeta['id'];
         }
 
-        if ($value === null) {
+        if (empty($value)) {
             return null;
         }
 
-        $value = sprintf('asset_%d', $value);
+        $resourceId = $value;
+        $resourceCollectionType = 'asset';
+        $resourceType = 'document';
+        $documentId = sprintf('asset_%d', $value);
 
-        return $value;
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
 
     }
 
@@ -297,35 +377,42 @@ class ResourceNormalizer implements ResourceNormalizerInterface
      * @param ElementInterface $resource
      * @param array            $buildOptions
      *
-     * @return string|null
+     * @return ResourceMetaInterface|null
      */
     protected function generateResourceIdFromPimcoreResource(ElementInterface $resource, array $buildOptions)
     {
         $locale = isset($buildOptions['locale']) ? $buildOptions['locale'] : null;
-        $documentType = null;
-        $id = null;
+
+        $documentId = null;
+        $resourceId = null;
+        $resourceCollectionType = null;
+        $resourceType = null;
 
         if ($resource instanceof DataObject) {
-            $documentType = 'object';
-            $id = $resource->getId();
+            $resourceCollectionType = 'object';
+            $resourceType = $resource->getType();
+            $resourceId = $resource->getId();
+        } elseif ($resource instanceof Asset) {
+            $resourceCollectionType = 'asset';
+            $resourceType = $resource->getType();
+            $resourceId = $resource->getId();
         } elseif ($resource instanceof Page) {
-            $documentType = 'page';
-            $id = $resource->getId();
-        } elseif ($resource instanceof Asset\Document) {
-            $documentType = 'asset';
-            $id = $resource->getId();
-            $locale = null;
+            $resourceCollectionType = 'page';
+            $resourceType = $resource->getType();
+            $resourceId = $resource->getId();
         }
 
-        if ($documentType === null) {
+        if ($resourceCollectionType === null) {
             return null;
         }
 
         if ($locale !== null) {
-            return sprintf('%s_%s_%d', $documentType, $locale, $id);
+            $documentId = sprintf('%s_%s_%d', $resourceCollectionType, $locale, $resourceId);
+        } else {
+            $documentId = sprintf('%s_%d', $resourceCollectionType, $resourceId);
         }
 
-        return sprintf('%s_%d', $documentType, $id);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
 
     }
 }
