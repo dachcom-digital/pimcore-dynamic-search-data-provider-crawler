@@ -7,11 +7,11 @@ services:
 
     DsWebCrawlerBundle\Transformer\HttpResponseHtmlDataTransformer:
         tags:
-            - { name: dynamic_search.transformer.dispatcher, priority: 10, identifier: http_response_html }
+            - { name: dynamic_search.transformer.document, priority: 10, identifier: http_response_html }
 
     DsWebCrawlerBundle\Transformer\HttpResponsePdfDataTransformer:
         tags:
-            - { name: dynamic_search.transformer.dispatcher, priority: 5, identifier: http_response_pdf }
+            - { name: dynamic_search.transformer.document, priority: 5, identifier: http_response_pdf }
 
     DsWebCrawlerBundle\Transformer\Field\Common\UriExtractor:
         tags:

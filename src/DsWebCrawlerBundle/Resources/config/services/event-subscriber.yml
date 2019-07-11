@@ -7,14 +7,14 @@ services:
 
     DsWebCrawlerBundle\EventSubscriber\LogEventSubscriber:
         tags:
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'queue' }
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
+            - { name: ds_web_crawler.event_subscriber, dispatcher: spider }
+            - { name: ds_web_crawler.event_subscriber, dispatcher: queue }
+            - { name: ds_web_crawler.event_subscriber, dispatcher: downloader }
 
     DsWebCrawlerBundle\EventSubscriber\NotifyEventSubscriber:
         tags:
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'downloader' }
+            - { name: ds_web_crawler.event_subscriber, dispatcher: downloader }
 
     DsWebCrawlerBundle\EventSubscriber\AbortEventSubscriber:
         tags:
-            - { name: 'ds_web_crawler.event_subscriber', dispatcher: 'spider' }
+            - { name: ds_web_crawler.event_subscriber, dispatcher: spider }
