@@ -2,19 +2,28 @@
 
 namespace DsWebCrawlerBundle\Service;
 
-use DynamicSearchBundle\Logger\LoggerInterface;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 
 interface CrawlerServiceInterface
 {
     /**
-     * @param LoggerInterface $logger
-     * @param string          $contextName
-     * @param string          $contextDispatchType
-     * @param array           $providerConfiguration
-     * @param array           $runtimeValues
+     * @param string $contextName
+     * @param string $contextDispatchType
+     * @param array  $providerConfiguration
      */
-    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeValues = []);
+    public function initFullCrawl(string $contextName, string $contextDispatchType, array $providerConfiguration);
 
+    /**
+     * @param ResourceMetaInterface $resourceMeta
+     * @param string                $contextName
+     * @param string                $contextDispatchType
+     * @param array                 $providerConfiguration
+     */
+    public function initSingleCrawl(ResourceMetaInterface $resourceMeta, string $contextName, string $contextDispatchType, array $providerConfiguration);
+
+    /**
+     * @return void
+     */
     public function process();
 
 }

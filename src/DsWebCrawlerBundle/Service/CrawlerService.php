@@ -5,8 +5,9 @@ namespace DsWebCrawlerBundle\Service;
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 use DsWebCrawlerBundle\Registry\EventSubscriberRegistryInterface;
-use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
+use DynamicSearchBundle\Provider\DataProviderInterface;
 use GuzzleHttp\Client;
 use DsWebCrawlerBundle\Configuration\Configuration;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
@@ -44,9 +45,19 @@ class CrawlerService implements CrawlerServiceInterface
     protected $spider;
 
     /**
+     * @var string
+     */
+    protected $crawlType;
+
+    /**
      * @var LoggerInterface
      */
     protected $logger;
+
+    /**
+     * @var ResourceMetaInterface
+     */
+    protected $resourceMeta;
 
     /**
      * @var string
@@ -64,18 +75,16 @@ class CrawlerService implements CrawlerServiceInterface
     protected $providerConfiguration;
 
     /**
-     * @var array
-     */
-    protected $runtimeValues;
-
-    /**
+     * @param LoggerInterface                  $logger
      * @param EventSubscriberRegistryInterface $eventSubscriberRegistry
      * @param EventDispatcherInterface         $eventDispatcher
      */
     public function __construct(
+        LoggerInterface $logger,
         EventSubscriberRegistryInterface $eventSubscriberRegistry,
         EventDispatcherInterface $eventDispatcher
     ) {
+        $this->logger = $logger;
         $this->eventSubscriberRegistry = $eventSubscriberRegistry;
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -83,13 +92,24 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function init(LoggerInterface $logger, string $contextName, string $contextDispatchType, array $providerConfiguration, array $runtimeValues = [])
+    public function initFullCrawl(string $contextName, string $contextDispatchType, array $providerConfiguration)
     {
-        $this->logger = $logger;
+        $this->crawlType = DataProviderInterface::PROVIDER_BEHAVIOUR_FULL_DISPATCH;
         $this->contextName = $contextName;
         $this->contextDispatchType = $contextDispatchType;
         $this->providerConfiguration = $providerConfiguration;
-        $this->runtimeValues = $runtimeValues;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function initSingleCrawl(ResourceMetaInterface $resourceMeta, string $contextName, string $contextDispatchType, array $providerConfiguration)
+    {
+        $this->crawlType = DataProviderInterface::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH;
+        $this->resourceMeta = $resourceMeta;
+        $this->contextName = $contextName;
+        $this->contextDispatchType = $contextDispatchType;
+        $this->providerConfiguration = $providerConfiguration;
     }
 
     /**
@@ -101,6 +121,9 @@ class CrawlerService implements CrawlerServiceInterface
         $this->logger->log($level, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function process()
     {
         try {
@@ -123,8 +146,8 @@ class CrawlerService implements CrawlerServiceInterface
             return;
         }
 
-        if ($this->getOption('max_crawl_limit') > 0) {
-            $this->getSpiderDownloader()->setDownloadLimit($this->getOption('max_crawl_limit'));
+        if ($this->getSpecialOption('max_crawl_limit') > 0) {
+            $this->getSpiderDownloader()->setDownloadLimit($this->getSpecialOption('max_crawl_limit'));
         }
 
         if ($this->getOption('content_max_size') !== 0) {
@@ -150,7 +173,7 @@ class CrawlerService implements CrawlerServiceInterface
 
     protected function initializeSpider()
     {
-        $spider = new Spider($this->getOption('seed'));
+        $spider = new Spider($this->getSpecialOption('seed'));
         $guzzleClient = new Client(['allow_redirects' => false, 'debug' => false]);
 
         $this->spider = $spider;
@@ -196,7 +219,8 @@ class CrawlerService implements CrawlerServiceInterface
                 $typeEventSubscriber->setLogger($this->logger);
                 $typeEventSubscriber->setContextName($this->contextName);
                 $typeEventSubscriber->setContextDispatchType($this->contextDispatchType);
-                $typeEventSubscriber->setRuntimeValues($this->runtimeValues);
+                $typeEventSubscriber->setCrawlType($this->crawlType);
+                $typeEventSubscriber->setResourceMeta($this->resourceMeta);
 
                 switch ($dispatcherType) {
                     case 'spider':
@@ -220,14 +244,14 @@ class CrawlerService implements CrawlerServiceInterface
     {
         $discoverySet = $this->spider->getDiscovererSet();
 
-        $discoverySet->maxDepth = $this->getOption('max_link_depth');
+        $discoverySet->maxDepth = $this->hasOption('max_link_depth') ? $this->getOption('max_link_depth') : 15;
 
         $discoverySet->set(new XPathExpressionDiscoverer("//link[@hreflang]|//a[not(@rel='nofollow')]"));
 
         $discoverySet->addFilter(new Filter\Prefetch\AllowedSchemeFilter($this->getOption('allowed_schemes')));
 
         if ($this->getOption('own_host_only') === true) {
-            $discoverySet->addFilter(new Filter\Prefetch\AllowedHostsFilter([$this->getOption('seed')], $this->getOption('allow_subdomains')));
+            $discoverySet->addFilter(new Filter\Prefetch\AllowedHostsFilter([$this->getSpecialOption('seed')], $this->getOption('allow_subdomains')));
         }
 
         if ($this->getOption('allow_hash_in_url') === false) {
@@ -238,8 +262,11 @@ class CrawlerService implements CrawlerServiceInterface
             $discoverySet->addFilter(new Filter\Prefetch\UriWithQueryStringFilter());
         }
 
-        $discoverySet->addFilter(new Discovery\UriFilter($this->getOption('invalid_links'), $this->spider->getDispatcher()));
-        $discoverySet->addFilter(new Discovery\NegativeUriFilter($this->getOption('valid_links'), $this->spider->getDispatcher()));
+        $discoverySet->addFilter(new Discovery\UriFilter($this->getSpecialOption('invalid_links'), $this->spider->getDispatcher()));
+
+        if ($this->hasOption('valid_links')) {
+            $discoverySet->addFilter(new Discovery\NegativeUriFilter($this->getOption('valid_links'), $this->spider->getDispatcher()));
+        }
     }
 
     /**
@@ -278,9 +305,24 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * @param string $key
      *
+     * @return bool
+     */
+    protected function hasOption($key)
+    {
+        return isset($this->providerConfiguration[$key]);
+    }
+
+    /**
+     * @param string $key
+     *
      * @return mixed
      */
     protected function getOption($key)
+    {
+        return $this->providerConfiguration[$key];
+    }
+
+    protected function getSpecialOption($key)
     {
         if ($key === 'invalid_links') {
             return $this->getInvalidLinks();
@@ -290,7 +332,7 @@ class CrawlerService implements CrawlerServiceInterface
             return $this->getSeed();
         }
 
-        return $this->providerConfiguration[$key];
+        return null;
     }
 
     /**
@@ -298,15 +340,11 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function getMaxCrawlLimit()
     {
-        if (in_array($this->contextDispatchType, [
-            ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT,
-            ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE,
-            ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE
-        ], true)) {
+        if ($this->crawlType === DataProviderInterface::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH) {
             return 1;
         }
 
-        return $this->providerConfiguration['max_crawl_limit'];
+        return $this->hasOption('max_crawl_limit') ? $this->getOption('max_crawl_limit') : 1;
     }
 
     /**
@@ -314,23 +352,18 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function getSeed()
     {
-        $seed = $this->providerConfiguration['seed'];
-
-        if (in_array($this->contextDispatchType, [
-            ContextDataInterface::CONTEXT_DISPATCH_TYPE_INSERT,
-            ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE,
-            ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE
-        ], true)) {
-            $seedHost = parse_url($seed, PHP_URL_HOST);
-            $seedScheme = parse_url($seed, PHP_URL_SCHEME);
+        if ($this->crawlType === DataProviderInterface::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH) {
+            $host = $this->providerConfiguration['host'];
+            $seedHost = parse_url($host, PHP_URL_HOST);
+            $seedScheme = parse_url($host, PHP_URL_SCHEME);
             return sprintf('%s://%s/%s',
                 $seedScheme,
                 rtrim($seedHost, '/'),
-                ltrim($this->runtimeValues['path'], '/')
+                ltrim($this->providerConfiguration['path'], '/')
             );
         }
 
-        return $seed;
+        return $this->providerConfiguration['seed'];
     }
 
     /**
@@ -338,8 +371,8 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function getInvalidLinks()
     {
-        $userInvalidLinks = $this->providerConfiguration['user_invalid_links'];
-        $coreInvalidLinks = $this->providerConfiguration['core_invalid_links'];
+        $userInvalidLinks = $this->hasOption('user_invalid_links') ? $this->getOption('user_invalid_links') : [];
+        $coreInvalidLinks = $this->hasOption('core_invalid_links') ? $this->getOption('core_invalid_links') : [];
 
         if (!empty($userInvalidLinks) && !empty($coreInvalidLinks)) {
             $invalidLinkRegex = array_merge($userInvalidLinks, [$coreInvalidLinks]);

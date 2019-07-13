@@ -1,9 +1,9 @@
 <?php
 
-namespace DsWebCrawlerBundle\Transformer\Field\Html;
+namespace DsWebCrawlerBundle\Resource\FieldTransformer\Html;
 
-use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
-use DynamicSearchBundle\Transformer\FieldTransformerInterface;
+use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
+use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource;
 

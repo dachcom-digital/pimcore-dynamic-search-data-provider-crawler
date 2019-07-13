@@ -1,13 +1,12 @@
 <?php
 
-namespace DsWebCrawlerBundle\Transformer\Field\Common;
+namespace DsWebCrawlerBundle\Resource\FieldTransformer\Pdf;
 
-use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
-use DynamicSearchBundle\Transformer\FieldTransformerInterface;
+use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
+use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use VDB\Spider\Resource;
 
-class HostExtractor implements FieldTransformerInterface
+class TextExtractor implements FieldTransformerInterface
 {
     /**
      * @var array
@@ -35,14 +34,14 @@ class HostExtractor implements FieldTransformerInterface
      */
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
-        if (!$resourceContainer->hasResource()) {
-            return null;
+        $value = null;
+        if ($resourceContainer->hasAttribute('pdf_content')) {
+            $value = $resourceContainer->getAttribute('pdf_content');
         }
 
-        /** @var Resource $resource */
-        $resource = $resourceContainer->getResource();
-
-        $value = $resource->getUri()->getHost();
+        if (empty($value)) {
+            return null;
+        }
 
         return $value;
 

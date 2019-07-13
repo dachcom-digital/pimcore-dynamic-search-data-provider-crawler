@@ -5,52 +5,56 @@ services:
         autoconfigure: true
         public: false
 
-    DsWebCrawlerBundle\Transformer\HttpResponseHtmlDataTransformer:
+    DsWebCrawlerBundle\Resource\Scaffolder\HttpResponseHtmlDataScaffolder:
         tags:
-            - { name: dynamic_search.transformer.document, priority: 10, identifier: http_response_html }
+            - { name: dynamic_search.resource.scaffolder, priority: 20, identifier: http_response_html, data_provider: web_crawler }
 
-    DsWebCrawlerBundle\Transformer\HttpResponsePdfDataTransformer:
+    DsWebCrawlerBundle\Resource\Scaffolder\HttpResponsePdfDataScaffolder:
         tags:
-            - { name: dynamic_search.transformer.document, priority: 5, identifier: http_response_pdf }
+            - { name: dynamic_search.resource.scaffolder, priority: 15, identifier: http_response_pdf, data_provider: web_crawler }
 
-    DsWebCrawlerBundle\Transformer\Field\Common\UriExtractor:
+    DsWebCrawlerBundle\Resource\Scaffolder\PimcoreElementScaffolder:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_uri_extractor, data_transformer: http_response_html }
-            - { name: dynamic_search.transformer.field, identifier: resource_uri_extractor, data_transformer: http_response_pdf }
+            - { name: dynamic_search.resource.scaffolder, priority: 10, identifier: pimcore_element, data_provider: web_crawler }
 
-    DsWebCrawlerBundle\Transformer\Field\Common\HostExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Common\UriExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_host_extractor, data_transformer: http_response_html }
-            - { name: dynamic_search.transformer.field, identifier: resource_host_extractor, data_transformer: http_response_pdf }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_uri_extractor, resource_scaffolder: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_uri_extractor, resource_scaffolder: http_response_pdf }
 
-    DsWebCrawlerBundle\Transformer\Field\Html\LanguageExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Common\HostExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_language_extractor, data_transformer: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_host_extractor, resource_scaffolder: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_host_extractor, resource_scaffolder: http_response_pdf }
 
-    DsWebCrawlerBundle\Transformer\Field\Pdf\LanguageExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Html\LanguageExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_language_extractor, data_transformer: http_response_pdf }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_language_extractor, resource_scaffolder: http_response_html }
 
-    DsWebCrawlerBundle\Transformer\Field\Html\MetaExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Pdf\LanguageExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_meta_extractor, data_transformer: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_language_extractor, resource_scaffolder: http_response_pdf }
 
-    DsWebCrawlerBundle\Transformer\Field\Html\HtmlTagExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Html\MetaExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_html_tag_content_extractor, data_transformer: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_meta_extractor, resource_scaffolder: http_response_html }
 
-    DsWebCrawlerBundle\Transformer\Field\Html\TextExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Html\HtmlTagExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_text_extractor, data_transformer: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_html_tag_content_extractor, resource_scaffolder: http_response_html }
 
-    DsWebCrawlerBundle\Transformer\Field\Pdf\TextExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Html\TextExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_text_extractor, data_transformer: http_response_pdf }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_text_extractor, resource_scaffolder: http_response_html }
 
-    DsWebCrawlerBundle\Transformer\Field\Html\TitleExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Pdf\TextExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_title_extractor, data_transformer: http_response_html }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_text_extractor, resource_scaffolder: http_response_pdf }
 
-    DsWebCrawlerBundle\Transformer\Field\Pdf\TitleExtractor:
+    DsWebCrawlerBundle\Resource\FieldTransformer\Html\TitleExtractor:
         tags:
-            - { name: dynamic_search.transformer.field, identifier: resource_title_extractor, data_transformer: http_response_pdf }
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_title_extractor, resource_scaffolder: http_response_html }
+
+    DsWebCrawlerBundle\Resource\FieldTransformer\Pdf\TitleExtractor:
+        tags:
+            - { name: dynamic_search.resource.field_transformer, identifier: resource_title_extractor, resource_scaffolder: http_response_pdf }

@@ -1,14 +1,19 @@
 services:
 
-    _defaults:
+    DsWebCrawlerBundle\Normalizer\AbstractResourceNormalizer:
+        abstract: true
         autowire: true
         autoconfigure: true
         public: false
 
     DsWebCrawlerBundle\Normalizer\DefaultResourceNormalizer:
+        parent: DsWebCrawlerBundle\Normalizer\AbstractResourceNormalizer
+        public: false
         tags:
             - { name: dynamic_search.resource_normalizer, identifier: web_crawler_default_resource_normalizer, data_provider: web_crawler }
 
     DsWebCrawlerBundle\Normalizer\LocalizedResourceNormalizer:
+        parent: DsWebCrawlerBundle\Normalizer\AbstractResourceNormalizer
+        public: false
         tags:
             - { name: dynamic_search.resource_normalizer, identifier: web_crawler_localized_resource_normalizer, data_provider: web_crawler }

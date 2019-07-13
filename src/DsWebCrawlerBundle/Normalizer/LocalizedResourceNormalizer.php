@@ -4,25 +4,17 @@ namespace DsWebCrawlerBundle\Normalizer;
 
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Exception\NormalizerException;
-use DynamicSearchBundle\Exception\OmitResourceException;
-use DynamicSearchBundle\Manager\DataManagerInterface;
-use DynamicSearchBundle\Manager\TransformerManagerInterface;
 use DynamicSearchBundle\Normalizer\Resource\NormalizedDataResource;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMeta;
-use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
-use DynamicSearchBundle\Normalizer\ResourceNormalizerInterface;
-use DynamicSearchBundle\Provider\DataProviderInterface;
-use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
+use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
-use Pimcore\Model\Document\Page;
-use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource as SpiderResource;
 
-class LocalizedResourceNormalizer implements ResourceNormalizerInterface
+class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @var array
@@ -30,34 +22,16 @@ class LocalizedResourceNormalizer implements ResourceNormalizerInterface
     protected $options;
 
     /**
-     * @var TransformerManagerInterface
-     */
-    protected $transformerManager;
-
-    /**
-     * @var DataManagerInterface
-     */
-    protected $dataManager;
-
-    /**
-     * @param TransformerManagerInterface $transformerManager
-     * @param DataManagerInterface        $dataManager
-     */
-    public function __construct(
-        TransformerManagerInterface $transformerManager,
-        DataManagerInterface $dataManager
-    ) {
-        $this->transformerManager = $transformerManager;
-        $this->dataManager = $dataManager;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setRequired('locales');
+        $resolver->setRequired(['locales', 'skip_not_localized_documents']);
+
         $resolver->setAllowedTypes('locales', ['string[]']);
+        $resolver->setAllowedTypes('skip_not_localized_documents', ['bool']);
+
+        $resolver->setDefaults(['skip_not_localized_documents' => true]);
         $resolver->setDefaults(['locales' => \Pimcore\Tool::getValidLanguages()]);
     }
 
@@ -72,45 +46,67 @@ class LocalizedResourceNormalizer implements ResourceNormalizerInterface
     /**
      * {@inheritDoc}
      */
-    public function normalizeToResourceStack(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer): array
+    protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
-        if ($resourceContainer->getResource() instanceof SpiderResource) {
-            return $this->normalizeSpiderResource($contextData, $resourceContainer);
-        } else {
-            return $this->normalizePimcoreResource($contextData, $resourceContainer);
+        /** @var Document $document */
+        $document = $resourceContainer->getResource();
+
+        // @todo: localized hardlink data detection!
+        // @todo: Related document detection! (some content parts could be inherited)
+
+        $documentLocale = $document->getProperty('language');
+
+        if (empty($documentLocale)) {
+            if ($this->options['skip_not_localized_documents'] === false) {
+                throw new NormalizerException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $document->getId()));
+            } else {
+                return [];
+            }
         }
+
+        $documentId = sprintf('%s_%s_%d', 'document', $documentLocale, $document->getId());
+        $path = $document->getRealFullPath();
+        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path]);
+
+        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
+
     }
 
     /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     *
-     * @return array
-     * @throws NormalizerException
+     * {@inheritDoc}
      */
-    protected function normalizePimcoreResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
-        $resource = $resourceContainer->getResource();
-        if (!$resource instanceof ElementInterface) {
-            return [];
-        }
+        /** @var Asset $asset */
+        $asset = $resourceContainer->getResource();
 
-        try {
-            $dataProvider = $this->dataManager->getDataProvider($contextData);
-        } catch (\Throwable $e) {
-            throw new NormalizerException(sprintf('Unable to load data provider "%s".', $contextData->getDataProviderName()));
-        }
+        $documentId = sprintf('%s_%d', 'asset', $asset->getId());
+        $path = $asset->getRealFullPath();
+        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path]);
 
-        if ($resource instanceof Page) {
-            return $this->normalizePage($contextData, $resourceContainer, $dataProvider);
-        }
+        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
 
-        if ($resource instanceof Asset) {
-            return $this->normalizeAsset($contextData, $resourceContainer, $dataProvider);
-        }
+    }
 
-        if ($resource instanceof DataObject) {
-            return $this->normalizeDataObject($contextData, $resourceContainer, $dataProvider);
+    /**
+     * {@inheritDoc}
+     */
+    protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    {
+        /** @var DataObject\Concrete $object */
+        $object = $resourceContainer->getResource();
+
+        /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
+        $linkGenerator = $object->getClass()->getLinkGenerator();
+        if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
+            foreach ($this->options['locales'] as $locale) {
+                $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
+                $path = $linkGenerator->generate($object, ['_locale' => $locale]);
+                $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['path' => $path]);
+                $normalizedResources[] = new NormalizedDataResource(null, $resourceMeta);
+            }
+        } else {
+            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
         }
 
         return [];
@@ -118,140 +114,7 @@ class LocalizedResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     * @param DataProviderInterface      $dataProvider
-     *
-     * @return array
-     * @throws NormalizerException
-     * @throws OmitResourceException
-     */
-    protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
-    {
-        /** @var Document $document */
-        $document = $resourceContainer->getResource();
-
-        // @todo: Hardlink data detection!
-        // @todo: Related document detection! (some content parts could be inherited)
-
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-            $this->executeCrawl($dataProvider, $contextData, $document->getRealFullPath());
-
-            throw new OmitResourceException();
-
-        }
-
-        // => deleted resource, just generate resource meta
-
-        $documentLocale = $document->getProperty('language');
-
-        if (empty($documentLocale)) {
-            throw new NormalizerException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $document->getId()));
-        }
-
-        $documentId = sprintf('%s_%s_%d', 'document', $documentLocale, $document->getId());
-        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['locale' => $documentLocale]);
-        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-    }
-
-    /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     * @param DataProviderInterface      $dataProvider
-     *
-     * @return array
-     * @throws NormalizerException
-     * @throws OmitResourceException
-     */
-    protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
-    {
-        /** @var Asset $asset */
-        $asset = $resourceContainer->getResource();
-
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-            $this->executeCrawl($dataProvider, $contextData, $asset->getRealFullPath());
-
-            throw new OmitResourceException();
-
-        }
-
-        // => deleted resource, just generate resource meta
-
-        $documentId = sprintf('%s_%d', 'asset', $asset->getId());
-        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['locale' => null]);
-        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-
-    }
-
-    /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     * @param DataProviderInterface      $dataProvider
-     *
-     * @return array
-     * @throws NormalizerException
-     * @throws OmitResourceException
-     */
-    protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
-    {
-        /** @var DataObject\Concrete $object */
-        $object = $resourceContainer->getResource();
-
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-
-            /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
-            $linkGenerator = $object->getClass()->getLinkGenerator();
-            if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
-                foreach ($this->options['locales'] as $locale) {
-                    $this->executeCrawl($dataProvider, $contextData, $linkGenerator->generate($object, ['_locale' => $locale]));
-                }
-            } else {
-                throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
-            }
-
-            throw new OmitResourceException();
-
-        }
-
-        // => deleted resource, just generate resource meta
-
-        $normalizedResources = [];
-        foreach ($this->options['locales'] as $locale) {
-            $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
-            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['locale' => $locale]);
-            $normalizedResources[] = new NormalizedDataResource(null, $resourceMeta);
-        }
-
-        return $normalizedResources;
-
-    }
-
-    /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     *
-     * @return array
-     */
-    protected function normalizeSpiderResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
-    {
-        $resourceMeta = null;
-        if ($resourceContainer->hasAttribute('html')) {
-            $resourceMeta = $this->generateResourceMetaFromHtmlResource($resourceContainer->getResource());
-        } elseif ($resourceContainer->hasAttribute('pdf_content')) {
-            $resourceMeta = $this->generateResourceMetaFromPdfResource($resourceContainer->getAttributes());
-        }
-
-        if ($resourceMeta === null) {
-            return [];
-        }
-
-        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-    }
-
-    /**
-     * @param SpiderResource $resource
-     *
-     * @return ResourceMetaInterface|null
+     * {@inheritDoc}
      */
     protected function generateResourceMetaFromHtmlResource(SpiderResource $resource)
     {
@@ -290,21 +153,27 @@ class LocalizedResourceNormalizer implements ResourceNormalizerInterface
         $contentLanguage = strtolower(str_replace('-', '_', $contentLanguage));
 
         if (empty($contentLanguage)) {
+            if ($this->options['skip_not_localized_documents'] === false) {
+                throw new NormalizerException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $resourceId));
+            } else {
+                return null;
+            }
+        }
+
+        if (empty($contentLanguage)) {
             return null;
         }
 
         $documentId = sprintf('%s_%s_%d', $resourceCollectionType, $contentLanguage, $resourceId);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, ['locale' => $contentLanguage]);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, []);
 
     }
 
     /**
-     * @param array $resourceAttributes
-     *
-     * @return ResourceMetaInterface|null
+     * {@inheritDoc}
      */
-    public function generateResourceMetaFromPdfResource(array $resourceAttributes)
+    protected function generateResourceMetaFromPdfResource(array $resourceAttributes)
     {
         $assetMeta = $resourceAttributes['asset_meta'];
 
@@ -326,28 +195,7 @@ class LocalizedResourceNormalizer implements ResourceNormalizerInterface
         $resourceType = 'document';
         $documentId = sprintf('asset_%d', $value);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, ['locale' => null]);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, []);
 
     }
-
-    /**
-     * @param DataProviderInterface $dataProvider
-     * @param ContextDataInterface  $contextData
-     * @param string                $path
-     *
-     * @throws NormalizerException
-     */
-    protected function executeCrawl(DataProviderInterface $dataProvider, ContextDataInterface $contextData, string $path)
-    {
-        /** @var ContextDataInterface $newContext */
-        $newContext = clone $contextData;
-        $newContext->updateRuntimeValue('path', $path);
-
-        try {
-            $dataProvider->execute($newContext);
-        } catch (\Throwable $e) {
-            throw new NormalizerException(sprintf('Error while re-crawling path "%s". Error was: %s', $path, $e->getMessage()));
-        }
-    }
-
 }

@@ -1,15 +1,15 @@
 <?php
 
-namespace DsWebCrawlerBundle\Transformer;
+namespace DsWebCrawlerBundle\Resource\Scaffolder;
 
 use DOMDocument;
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
-use DynamicSearchBundle\Transformer\DocumentTransformerInterface;
+use DynamicSearchBundle\Resource\ResourceScaffolderInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use VDB\Spider\Resource as DataResource;
 
-class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
+class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
 {
     /**
      * @var ContextDataInterface
@@ -20,6 +20,22 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
      * @var LoggerInterface
      */
     protected $logger;
+
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isBaseResource($resource)
+    {
+        return true;
+    }
 
     /**
      * {@inheritDoc}
@@ -34,47 +50,22 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
         $parts = explode(';', $contentTypeInfo);
         $mimeType = trim($parts[0]);
 
-        if ($mimeType === 'text/html') {
-            return true;
+        if ($mimeType !== 'text/html') {
+            return false;
         }
 
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function transformData(ContextDataInterface $contextData, $resource): array
-    {
-        $this->contextData = $contextData;
-
-        if (!$resource instanceof DataResource) {
-            return [];
-        }
-
-        $host = $resource->getUri()->getHost();
         $uri = $resource->getUri()->toString();
-
         $statusCode = $resource->getResponse()->getStatusCode();
 
         if ($statusCode !== 200) {
             $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
-            return [];
+            return false;
         }
 
         /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
-        $html = $stream->getContents();
 
         //page has canonical link: do not track if this is not the canonical document
         $hasCanonicalLink = $crawler->filterXpath('//link[@rel="canonical"]')->count() > 0;
@@ -87,7 +78,7 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
                         (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
                     )
                 );
-                return [];
+                return false;
             }
         }
 
@@ -96,17 +87,38 @@ class HttpResponseHtmlDataTransformer implements DocumentTransformerInterface
 
         if ($hasNoIndex === true) {
             $this->log('debug', sprintf('skip transform [ %s ] because it has a noindex tag', $uri));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setup(ContextDataInterface $contextData, $resource): array
+    {
+        $this->contextData = $contextData;
+
+        if (!$resource instanceof DataResource) {
             return [];
         }
+
+        $host = $resource->getUri()->getHost();
+        $uri = $resource->getUri()->toString();
+
+        $stream = $resource->getResponse()->getBody();
+        $stream->rewind();
+        $html = $stream->getContents();
 
         $doc = $this->generateDomDocument($html);
         $html = $this->extractHtml($doc);
 
         return [
-            'uri'      => $uri,
-            'host'     => $host,
-            'doc'      => $doc,
-            'html'     => $html
+            'uri'  => $uri,
+            'host' => $host,
+            'doc'  => $doc,
+            'html' => $html
         ];
     }
 

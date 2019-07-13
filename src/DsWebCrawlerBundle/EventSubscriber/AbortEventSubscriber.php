@@ -8,6 +8,7 @@ use DynamicSearchBundle\DynamicSearchEvents;
 use DynamicSearchBundle\Event\ErrorEvent;
 use DynamicSearchBundle\EventDispatcher\DynamicSearchEventDispatcherInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use VDB\Spider\Event\SpiderEvents;
@@ -30,9 +31,14 @@ class AbortEventSubscriber implements EventSubscriberInterface
     protected $contextDispatchType;
 
     /**
-     * @var array
+     * @var string
      */
-    protected $runtimeValues;
+    protected $crawlType;
+
+    /**
+     * @var ResourceMetaInterface
+     */
+    protected $resourceMeta;
 
     /**
      * @var LoggerInterface
@@ -72,9 +78,17 @@ class AbortEventSubscriber implements EventSubscriberInterface
     /**
      * {@inheritDoc}
      */
-    public function setRuntimeValues(array $runtimeValues = [])
+    public function setCrawlType(string $crawlType)
     {
-        $this->runtimeValues = $runtimeValues;
+        $this->crawlType = $crawlType;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
+    {
+        $this->resourceMeta = $resourceMeta;
     }
 
     /**

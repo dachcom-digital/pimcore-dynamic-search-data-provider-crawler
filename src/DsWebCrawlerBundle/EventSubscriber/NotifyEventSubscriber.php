@@ -7,6 +7,7 @@ use DynamicSearchBundle\DynamicSearchEvents;
 use DynamicSearchBundle\Event\NewDataEvent;
 use DynamicSearchBundle\EventDispatcher\DynamicSearchEventDispatcherInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use VDB\Spider\Resource;
 
@@ -23,9 +24,14 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     protected $contextDispatchType;
 
     /**
-     * @var array
+     * @var string
      */
-    protected $runtimeValues;
+    protected $crawlType;
+
+    /**
+     * @var ResourceMetaInterface
+     */
+    protected $resourceMeta;
 
     /**
      * @var LoggerInterface
@@ -64,9 +70,17 @@ class NotifyEventSubscriber implements EventSubscriberInterface
     /**
      * {@inheritDoc}
      */
-    public function setRuntimeValues(array $runtimeValues = [])
+    public function setCrawlType(string $crawlType)
     {
-        $this->runtimeValues = $runtimeValues;
+        $this->crawlType = $crawlType;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
+    {
+        $this->resourceMeta = $resourceMeta;
     }
 
     /**
@@ -108,7 +122,7 @@ class NotifyEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $newDataEvent = new NewDataEvent($this->contextDispatchType, $this->contextName, $rawContent, $this->runtimeValues);
+        $newDataEvent = new NewDataEvent($this->contextDispatchType, $this->contextName, $rawContent, $this->crawlType, $this->resourceMeta);
 
         $this->eventDispatcher->dispatch(DynamicSearchEvents::NEW_DATA_AVAILABLE, $newDataEvent);
 

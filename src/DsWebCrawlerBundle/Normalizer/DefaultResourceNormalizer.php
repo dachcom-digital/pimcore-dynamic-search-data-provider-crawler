@@ -4,52 +4,22 @@ namespace DsWebCrawlerBundle\Normalizer;
 
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Exception\NormalizerException;
-use DynamicSearchBundle\Exception\OmitResourceException;
-use DynamicSearchBundle\Manager\DataManagerInterface;
-use DynamicSearchBundle\Manager\TransformerManagerInterface;
 use DynamicSearchBundle\Normalizer\Resource\NormalizedDataResource;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMeta;
-use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
-use DynamicSearchBundle\Normalizer\ResourceNormalizerInterface;
-use DynamicSearchBundle\Provider\DataProviderInterface;
-use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
+use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
-use Pimcore\Model\Document\Page;
-use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource as SpiderResource;
 
-class DefaultResourceNormalizer implements ResourceNormalizerInterface
+class DefaultResourceNormalizer extends AbstractResourceNormalizer
 {
     /**
      * @var array
      */
     protected $options;
-
-    /**
-     * @var TransformerManagerInterface
-     */
-    protected $transformerManager;
-
-    /**
-     * @var DataManagerInterface
-     */
-    protected $dataManager;
-
-    /**
-     * @param TransformerManagerInterface $transformerManager
-     * @param DataManagerInterface        $dataManager
-     */
-    public function __construct(
-        TransformerManagerInterface $transformerManager,
-        DataManagerInterface $dataManager
-    ) {
-        $this->transformerManager = $transformerManager;
-        $this->dataManager = $dataManager;
-    }
 
     /**
      * {@inheritDoc}
@@ -69,45 +39,28 @@ class DefaultResourceNormalizer implements ResourceNormalizerInterface
     /**
      * {@inheritDoc}
      */
-    public function normalizeToResourceStack(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer): array
+    protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
-        if ($resourceContainer->getResource() instanceof SpiderResource) {
-            return $this->normalizeSpiderResource($contextData, $resourceContainer);
-        } else {
-            return $this->normalizePimcoreResource($contextData, $resourceContainer);
-        }
-    }
+        /** @var Document $document */
+        $document = $resourceContainer->getResource();
 
-    /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     *
-     * @return array
-     * @throws NormalizerException
-     */
-    protected function normalizePimcoreResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
-    {
-        $resource = $resourceContainer->getResource();
-        if (!$resource instanceof ElementInterface) {
-            return [];
+        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
+
+            // @todo: Related document detection! (some content parts could be inherited)
+
+            $this->executeCrawl($dataProvider, $contextData, $document->getRealFullPath());
+
         }
 
-        try {
-            $dataProvider = $this->dataManager->getDataProvider($contextData);
-        } catch (\Throwable $e) {
-            throw new NormalizerException(sprintf('Unable to load data provider "%s".', $contextData->getDataProviderName()));
-        }
+        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
 
-        if ($resource instanceof Page) {
-            return $this->normalizePage($contextData, $resourceContainer, $dataProvider);
-        }
+            // @todo: Related document detection! (some content parts could be inherited)
 
-        if ($resource instanceof Asset) {
-            return $this->normalizeAsset($contextData, $resourceContainer, $dataProvider);
-        }
+            $documentId = sprintf('%s_%d', 'document', $document->getId());
+            $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType());
 
-        if ($resource instanceof DataObject) {
-            return $this->normalizeDataObject($contextData, $resourceContainer, $dataProvider);
+            return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
+
         }
 
         return [];
@@ -115,73 +68,33 @@ class DefaultResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     * @param DataProviderInterface      $dataProvider
-     *
-     * @return array
-     * @throws NormalizerException
-     * @throws OmitResourceException
+     * {@inheritDoc}
      */
-    protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
-    {
-        /** @var Document $document */
-        $document = $resourceContainer->getResource();
-
-        // @todo: Hardlink data detection!
-        // @todo: Related document detection! (some content parts could be inherited)
-
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-            $this->executeCrawl($dataProvider, $contextData, $document->getRealFullPath());
-
-            throw new OmitResourceException();
-        }
-
-        // => deleted resource, just generate resource meta
-
-        $documentId = sprintf('%s_%d', 'document', $document->getId());
-        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType());
-        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-    }
-
-    /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     * @param DataProviderInterface      $dataProvider
-     *
-     * @return array
-     * @throws NormalizerException
-     * @throws OmitResourceException
-     */
-    protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
+    protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
         /** @var Asset $asset */
         $asset = $resourceContainer->getResource();
 
         if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
             $this->executeCrawl($dataProvider, $contextData, $asset->getRealFullPath());
-
-            throw new OmitResourceException();
         }
 
-        // => deleted resource, just generate resource meta
+        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
 
-        $documentId = sprintf('%s_%d', 'asset', $asset->getId());
-        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType());
-        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
+            $documentId = sprintf('%s_%d', 'asset', $asset->getId());
+            $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType());
+
+            return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
+        }
+
+        return [];
 
     }
 
     /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     * @param DataProviderInterface      $dataProvider
-     *
-     * @return array
-     * @throws NormalizerException
-     * @throws OmitResourceException
+     * {@inheritDoc}
      */
-    protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer, DataProviderInterface $dataProvider)
+    protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
@@ -195,48 +108,24 @@ class DefaultResourceNormalizer implements ResourceNormalizerInterface
             } else {
                 throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
             }
-
-            throw new OmitResourceException();
-
         }
 
-        // => deleted resource, just generate resource meta
+        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
 
-        $normalizedResources = [];
-        $documentId = sprintf('%s_%d', 'object', $object->getId());
-        $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType());
-        $normalizedResources[] = new NormalizedDataResource(null, $resourceMeta);
+            $normalizedResources = [];
+            $documentId = sprintf('%s_%d', 'object', $object->getId());
+            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType());
+            $normalizedResources[] = new NormalizedDataResource(null, $resourceMeta);
 
-        return $normalizedResources;
+            return $normalizedResources;
+        }
+
+        return [];
 
     }
 
     /**
-     * @param ContextDataInterface       $contextData
-     * @param ResourceContainerInterface $resourceContainer
-     *
-     * @return array
-     */
-    protected function normalizeSpiderResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
-    {
-        $resourceMeta = null;
-        if ($resourceContainer->hasAttribute('html')) {
-            $resourceMeta = $this->generateResourceMetaFromHtmlResource($resourceContainer->getResource());
-        } elseif ($resourceContainer->hasAttribute('pdf_content')) {
-            $resourceMeta = $this->generateResourceMetaFromPdfResource($resourceContainer->getAttributes());
-        }
-
-        if ($resourceMeta === null) {
-            return [];
-        }
-
-        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-    }
-
-    /**
-     * @param SpiderResource $resource
-     *
-     * @return ResourceMetaInterface|null
+     * {@inheritDoc}
      */
     protected function generateResourceMetaFromHtmlResource(SpiderResource $resource)
     {
@@ -278,11 +167,9 @@ class DefaultResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * @param array $resourceAttributes
-     *
-     * @return ResourceMetaInterface|null
+     * {@inheritDoc}
      */
-    public function generateResourceMetaFromPdfResource(array $resourceAttributes)
+    protected function generateResourceMetaFromPdfResource(array $resourceAttributes)
     {
         $assetMeta = $resourceAttributes['asset_meta'];
 
@@ -306,25 +193,5 @@ class DefaultResourceNormalizer implements ResourceNormalizerInterface
 
         return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
 
-    }
-
-    /**
-     * @param DataProviderInterface $dataProvider
-     * @param ContextDataInterface  $contextData
-     * @param string                $path
-     *
-     * @throws NormalizerException
-     */
-    protected function executeCrawl(DataProviderInterface $dataProvider, ContextDataInterface $contextData, string $path)
-    {
-        /** @var ContextDataInterface $newContext */
-        $newContext = clone $contextData;
-        $newContext->updateRuntimeValue('path', $path);
-
-        try {
-            $dataProvider->execute($newContext);
-        } catch (\Throwable $e) {
-            throw new NormalizerException(sprintf('Error while re-crawling path "%s". Error was: %s', $path, $e->getMessage()));
-        }
     }
 }

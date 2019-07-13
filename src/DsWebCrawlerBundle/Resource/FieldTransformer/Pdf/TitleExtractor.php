@@ -1,12 +1,13 @@
 <?php
 
-namespace DsWebCrawlerBundle\Transformer\Field\Pdf;
+namespace DsWebCrawlerBundle\Resource\FieldTransformer\Pdf;
 
-use DynamicSearchBundle\Transformer\Container\ResourceContainerInterface;
-use DynamicSearchBundle\Transformer\FieldTransformerInterface;
+use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
+use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use VDB\Spider\Resource;
 
-class LanguageExtractor implements FieldTransformerInterface
+class TitleExtractor implements FieldTransformerInterface
 {
     /**
      * @var array
@@ -38,14 +39,22 @@ class LanguageExtractor implements FieldTransformerInterface
             return null;
         }
 
-        $value = 'all';
+        /** @var Resource $resource */
+        $resource = $resourceContainer->getResource();
+
+        $value = null;
         if ($resourceContainer->hasAttribute('asset_meta')) {
             $assetMeta = $resourceContainer->getAttribute('asset_meta');
-            if (is_array($assetMeta) && is_string($assetMeta['language'])) {
-                $value = $assetMeta['language'];
+            if (is_array($assetMeta) && is_string($assetMeta['key'])) {
+                $value = $assetMeta['key'];
             }
         }
 
+        if ($value === null) {
+            $value = basename($resource->getUri()->toString());
+        }
+
         return $value;
+
     }
 }

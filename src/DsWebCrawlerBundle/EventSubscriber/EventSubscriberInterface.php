@@ -3,6 +3,7 @@
 namespace DsWebCrawlerBundle\EventSubscriber;
 
 use DynamicSearchBundle\Logger\LoggerInterface;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 
 interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\EventSubscriberInterface
 {
@@ -22,7 +23,12 @@ interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\Ev
     public function setContextDispatchType(string $contextDispatchType);
 
     /**
-     * @param array $runtimeValues
+     * @param string $crawlType
      */
-    public function setRuntimeValues(array $runtimeValues = []);
+    public function setCrawlType(string $crawlType);
+
+    /**
+     * @param ResourceMetaInterface|null $resourceMeta
+     */
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta);
 }

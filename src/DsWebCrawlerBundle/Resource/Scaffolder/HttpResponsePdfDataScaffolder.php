@@ -1,15 +1,15 @@
 <?php
 
-namespace DsWebCrawlerBundle\Transformer;
+namespace DsWebCrawlerBundle\Resource\Scaffolder;
 
 use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
-use DynamicSearchBundle\Transformer\DocumentTransformerInterface;
+use DynamicSearchBundle\Resource\ResourceScaffolderInterface;
 use Pimcore\Document\Adapter\Ghostscript;
 use Pimcore\Model\Asset;
 use VDB\Spider\Resource as DataResource;
 
-class HttpResponsePdfDataTransformer implements DocumentTransformerInterface
+class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
 {
     /**
      * @var ContextDataInterface
@@ -20,6 +20,22 @@ class HttpResponsePdfDataTransformer implements DocumentTransformerInterface
      * @var LoggerInterface
      */
     protected $logger;
+
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isBaseResource($resource)
+    {
+        return true;
+    }
 
     /**
      * {@inheritDoc}
@@ -44,15 +60,7 @@ class HttpResponsePdfDataTransformer implements DocumentTransformerInterface
     /**
      * {@inheritDoc}
      */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function transformData(ContextDataInterface $contextData, $resource): array
+    public function setup(ContextDataInterface $contextData, $resource): array
     {
         $this->contextData = $contextData;
 
