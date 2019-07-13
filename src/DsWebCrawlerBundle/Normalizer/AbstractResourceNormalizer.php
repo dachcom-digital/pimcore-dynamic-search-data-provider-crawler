@@ -41,7 +41,7 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function normalizeToResourceStack(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer): array
     {
@@ -79,6 +79,7 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
+     *
      * @throws NormalizerException
      */
     protected function normalizePimcoreResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
@@ -101,7 +102,6 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
         }
 
         return [];
-
     }
 
     /**
@@ -109,42 +109,47 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
+     *
      * @throws NormalizerException
      */
-    protected abstract function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
+    abstract protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
 
     /**
      * @param ContextDataInterface       $contextData
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
+     *
      * @throws NormalizerException
      */
-    protected abstract function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
+    abstract protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
 
     /**
      * @param ContextDataInterface       $contextData
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
+     *
      * @throws NormalizerException
      */
-    protected abstract function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
+    abstract protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
 
     /**
      * @param SpiderResource $resource
      *
      * @return ResourceMetaInterface|null
+     *
      * @throws NormalizerException
      */
-    protected abstract function generateResourceMetaFromHtmlResource(SpiderResource $resource);
+    abstract protected function generateResourceMetaFromHtmlResource(SpiderResource $resource);
 
     /**
      * @param array $resourceAttributes
      *<
+     *
      * @return ResourceMetaInterface|null
+     *
      * @throws NormalizerException
      */
-    protected abstract function generateResourceMetaFromPdfResource(array $resourceAttributes);
-
+    abstract protected function generateResourceMetaFromPdfResource(array $resourceAttributes);
 }

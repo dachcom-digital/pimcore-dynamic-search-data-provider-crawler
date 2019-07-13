@@ -6,7 +6,6 @@ use DsWebCrawlerBundle\Service\CrawlerStateServiceInterface;
 use Pimcore\Http\Request\Resolver\DocumentResolver;
 use Pimcore\Model\Document\Page;
 use Pimcore\Templating\Helper\HeadMeta;
-use Symfony\Cmf\Bundle\RoutingBundle\Routing\DynamicRouter;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 
 class DocumentMetaDataListener

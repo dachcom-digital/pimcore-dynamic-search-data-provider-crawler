@@ -33,12 +33,8 @@ class FileWatcherService implements FileWatcherServiceInterface
         }
 
         $this->fileSystem->mkdir(Configuration::CRAWLER_PERSISTENCE_STORE_DIR_PATH, 0755);
-
     }
 
-    /**
-     * Rest Uri Filter Store
-     */
     public function resetUriFilterPersistenceStore()
     {
         if ($this->fileSystem->exists(Configuration::CRAWLER_URI_FILTER_FILE_PATH)) {
@@ -47,7 +43,7 @@ class FileWatcherService implements FileWatcherServiceInterface
     }
 
     /**
-     * @param        $path
+     * @param string $path
      * @param string $pattern
      */
     private function removeFolder($path, $pattern = '*')

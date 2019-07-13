@@ -16,7 +16,7 @@ class PimcoreElementScaffolder implements ResourceScaffolderInterface
     protected $contextData;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isBaseResource($resource)
     {
@@ -24,7 +24,7 @@ class PimcoreElementScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isApplicable($resource): bool
     {
@@ -40,7 +40,7 @@ class PimcoreElementScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setup(ContextDataInterface $contextData, $resource): array
     {

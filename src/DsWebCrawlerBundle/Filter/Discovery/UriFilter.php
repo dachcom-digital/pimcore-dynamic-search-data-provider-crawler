@@ -32,6 +32,7 @@ class UriFilter implements PreFetchFilterInterface
      * @param UriInterface $uri
      *
      * @return bool
+     *
      * @throws \Exception
      */
     public function match(UriInterface $uri)
@@ -39,11 +40,11 @@ class UriFilter implements PreFetchFilterInterface
         foreach ($this->regexBag as $regex) {
             if (preg_match($regex, $uri->toString())) {
                 $this->notifyDispatcher($uri, 'uri.match.forbidden');
+
                 return true;
             }
         }
 
         return false;
     }
-
 }

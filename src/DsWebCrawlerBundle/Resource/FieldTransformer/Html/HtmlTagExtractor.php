@@ -6,7 +6,7 @@ use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class HtmlTagExtractor implements FieldTransformerInterface
 {
@@ -16,7 +16,7 @@ class HtmlTagExtractor implements FieldTransformerInterface
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -32,7 +32,7 @@ class HtmlTagExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -40,7 +40,7 @@ class HtmlTagExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
@@ -48,7 +48,7 @@ class HtmlTagExtractor implements FieldTransformerInterface
             return null;
         }
 
-        /** @var Resource $resource */
+        /** @var SpiderResource $resource */
         $resource = $resourceContainer->getAttribute('resource');
 
         /** @var Crawler $crawler */
@@ -74,6 +74,5 @@ class HtmlTagExtractor implements FieldTransformerInterface
         }
 
         return $value;
-
     }
 }

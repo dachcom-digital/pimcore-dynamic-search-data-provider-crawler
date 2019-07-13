@@ -21,9 +21,5 @@ interface CrawlerServiceInterface
      */
     public function initSingleCrawl(ResourceMetaInterface $resourceMeta, string $contextName, string $contextDispatchType, array $providerConfiguration);
 
-    /**
-     * @return void
-     */
     public function process();
-
 }

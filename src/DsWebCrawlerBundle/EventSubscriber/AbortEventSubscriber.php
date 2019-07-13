@@ -76,7 +76,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setCrawlType(string $crawlType)
     {
@@ -84,7 +84,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
     {

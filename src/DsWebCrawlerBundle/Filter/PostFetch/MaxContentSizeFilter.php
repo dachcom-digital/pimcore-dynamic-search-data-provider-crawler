@@ -3,7 +3,7 @@
 namespace DsWebCrawlerBundle\Filter\PostFetch;
 
 use VDB\Spider\Filter\PostFetchFilterInterface;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class MaxContentSizeFilter implements PostFetchFilterInterface
 {
@@ -13,21 +13,19 @@ class MaxContentSizeFilter implements PostFetchFilterInterface
     protected $maxFileSize = 0;
 
     /**
-     * MaxContentSizeFilter constructor.
-     *
      * @param int $maxFileSize
      */
     public function __construct($maxFileSize = 0)
     {
-        $this->maxFileSize = (float)$maxFileSize;
+        $this->maxFileSize = (float) $maxFileSize;
     }
 
     /**
-     * @param Resource $resource
+     * @param SpiderResource $resource
      *
      * @return bool
      */
-    public function match(Resource $resource)
+    public function match(SpiderResource $resource)
     {
         $size = $resource->getResponse()->getBody()->getSize();
         $sizeMb = $size / 1024 / 1024;

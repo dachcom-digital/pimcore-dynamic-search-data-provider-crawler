@@ -90,7 +90,7 @@ class CrawlerService implements CrawlerServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function initFullCrawl(string $contextName, string $contextDispatchType, array $providerConfiguration)
     {
@@ -101,7 +101,7 @@ class CrawlerService implements CrawlerServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function initSingleCrawl(ResourceMetaInterface $resourceMeta, string $contextName, string $contextDispatchType, array $providerConfiguration)
     {
@@ -122,7 +122,7 @@ class CrawlerService implements CrawlerServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function process()
     {
@@ -130,6 +130,7 @@ class CrawlerService implements CrawlerServiceInterface
             $this->initializeSpider();
         } catch (\Exception $e) {
             $this->dispatchError(sprintf('Error while initializing spider. Error was: %s', $e->getMessage()), $e);
+
             return;
         }
 
@@ -143,6 +144,7 @@ class CrawlerService implements CrawlerServiceInterface
             $this->setupDiscoverySet();
         } catch (\Exception $e) {
             $this->dispatchError(sprintf('Error while adding discovery sets. Error was: %s', $e->getMessage()), $e);
+
             return;
         }
 
@@ -168,7 +170,6 @@ class CrawlerService implements CrawlerServiceInterface
         $this->spider->crawl();
 
         $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH, new GenericEvent($this, ['spider' => $this->spider]));
-
     }
 
     protected function initializeSpider()
@@ -215,7 +216,6 @@ class CrawlerService implements CrawlerServiceInterface
         foreach ($this->eventSubscriberRegistry->all() as $dispatcherType => $eventSubscriber) {
             /** @var EventSubscriberInterface $typeEventSubscriber */
             foreach ($eventSubscriber as $typeEventSubscriber) {
-
                 $typeEventSubscriber->setLogger($this->logger);
                 $typeEventSubscriber->setContextName($this->contextName);
                 $typeEventSubscriber->setContextDispatchType($this->contextDispatchType);
@@ -225,12 +225,15 @@ class CrawlerService implements CrawlerServiceInterface
                 switch ($dispatcherType) {
                     case 'spider':
                         $this->spider->getDispatcher()->addSubscriber($typeEventSubscriber);
+
                         break;
                     case 'queue':
                         $this->getSpiderQueueManager()->getDispatcher()->addSubscriber($typeEventSubscriber);
+
                         break;
                     case 'downloader':
                         $this->getSpiderDownloader()->getDispatcher()->addSubscriber($typeEventSubscriber);
+
                         break;
                 }
             }
@@ -356,7 +359,9 @@ class CrawlerService implements CrawlerServiceInterface
             $host = $this->providerConfiguration['host'];
             $seedHost = parse_url($host, PHP_URL_HOST);
             $seedScheme = parse_url($host, PHP_URL_SCHEME);
-            return sprintf('%s://%s/%s',
+
+            return sprintf(
+                '%s://%s/%s',
                 $seedScheme,
                 rtrim($seedHost, '/'),
                 ltrim($this->providerConfiguration['path'], '/')
@@ -393,7 +398,8 @@ class CrawlerService implements CrawlerServiceInterface
      */
     protected function dispatchError(string $message, \Exception $exception)
     {
-        $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_ERROR,
+        $this->spider->getDispatcher()->dispatch(
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_ERROR,
             new GenericEvent($this, [
                 'spider'    => $this->spider,
                 'message'   => $message,

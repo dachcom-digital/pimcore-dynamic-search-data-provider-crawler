@@ -7,12 +7,12 @@ use Symfony\Component\EventDispatcher\Event;
 class CrawlerRequestHeaderEvent extends Event
 {
     /**
-     * @var Resource
+     * @var resource
      */
-    private $headers = [];
+    protected $headers = [];
 
     /**
-     * @param $header
+     * @param array $header
      *
      * @throws \Exception
      */
@@ -30,11 +30,10 @@ class CrawlerRequestHeaderEvent extends Event
     }
 
     /**
-     * @return Resource
+     * @return resource
      */
     public function getHeaders()
     {
         return $this->headers;
     }
-
 }

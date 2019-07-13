@@ -30,7 +30,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isBaseResource($resource)
     {
@@ -38,7 +38,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isApplicable($resource): bool
     {
@@ -59,6 +59,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
 
         if ($statusCode !== 200) {
             $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
+
             return false;
         }
 
@@ -73,11 +74,11 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
         if ($hasCanonicalLink === true) {
             if ($uri != $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')) {
                 $this->log('debug', sprintf(
-                        'skip transform [ %s ] because it has canonical link %s',
-                        $uri,
-                        (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
-                    )
-                );
+                    'skip transform [ %s ] because it has canonical link %s',
+                    $uri,
+                    (string) $crawler->filterXpath('//link[@rel="canonical"]')->attr('href')
+                ));
+
                 return false;
             }
         }
@@ -87,6 +88,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
 
         if ($hasNoIndex === true) {
             $this->log('debug', sprintf('skip transform [ %s ] because it has a noindex tag', $uri));
+
             return false;
         }
 
@@ -94,7 +96,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setup(ContextDataInterface $contextData, $resource): array
     {

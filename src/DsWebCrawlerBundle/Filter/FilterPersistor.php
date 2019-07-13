@@ -42,11 +42,9 @@ class FilterPersistor
     }
 
     /**
-     * Set flintstone options
+     * Set flintstone options.
      *
      * @param array $options an array of options
-     *
-     * @return void
      */
     public function setOptions($options)
     {
@@ -61,7 +59,6 @@ class FilterPersistor
     public function setupDatabase()
     {
         if (empty($this->data)) {
-
             $this->data['file'] = $this->db;
             $this->data['file_tmp'] = str_replace($this->options['ext'], '_tmp' . $this->options['ext'], $this->db);
             $this->data['cache'] = [];
@@ -90,8 +87,8 @@ class FilterPersistor
     }
 
     /**
-     * @param $file
-     * @param $mode
+     * @param string $file
+     * @param int    $mode
      *
      * @return resource
      */
@@ -101,9 +98,10 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return array|bool|mixed|string
+     *
      * @throws \Exception
      */
     private function getKey($key)
@@ -115,16 +113,13 @@ class FilterPersistor
         }
 
         if (($fp = $this->openFile($this->data['file'], 'rb')) !== false) {
-
             @flock($fp, LOCK_SH);
 
             while (($line = fgets($fp)) !== false) {
-
                 $line = rtrim($line);
                 $pieces = explode('=', $line);
 
                 if ($pieces[0] == $key) {
-
                     if (count($pieces) > 2) {
                         array_shift($pieces);
                         $data = implode('=', $pieces);
@@ -154,10 +149,11 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
-     * @param $data
+     * @param string $key
+     * @param mixed  $data
      *
      * @return bool
+     *
      * @throws \Exception
      */
     private function replaceKey($key, $data)
@@ -165,6 +161,7 @@ class FilterPersistor
         $swap = true;
         $contents = '';
         $origData = null;
+        $tp = null;
 
         if ($this->options['swap_memory_limit'] > 0) {
             clearstatcache();
@@ -174,7 +171,6 @@ class FilterPersistor
         }
 
         if ($data !== false) {
-
             if ($this->options['cache'] === true) {
                 $origData = $data;
             }
@@ -192,14 +188,11 @@ class FilterPersistor
         }
 
         if (($fp = $this->openFile($this->data['file'], 'rb')) !== false) {
-
             @flock($fp, LOCK_SH);
 
             while (($line = fgets($fp)) !== false) {
-
                 $pieces = explode('=', $line);
                 if ($pieces[0] == $key) {
-
                     if ($data === false) {
                         continue;
                     }
@@ -212,12 +205,10 @@ class FilterPersistor
                 }
 
                 if ($swap) {
-
                     $fwrite = @fwrite($tp, $line);
                     if ($fwrite === false) {
                         throw new \Exception('Could not write to temporary database ' . $this->db);
                     }
-
                 } else {
                     $contents .= $line;
                 }
@@ -227,7 +218,6 @@ class FilterPersistor
             @fclose($fp);
 
             if ($swap) {
-
                 @flock($tp, LOCK_UN);
                 @fclose($tp);
 
@@ -241,9 +231,7 @@ class FilterPersistor
 
                 @chmod($this->data['file'], 0777);
             } else {
-
                 if (($fp = $this->openFile($this->data['file'], 'wb')) !== false) {
-
                     @flock($fp, LOCK_EX);
                     $fwrite = @fwrite($fp, $contents);
                     @flock($fp, LOCK_UN);
@@ -266,10 +254,11 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
-     * @param $data
+     * @param string $key
+     * @param mixed  $data
      *
      * @return bool
+     *
      * @throws \Exception
      */
     private function setKey($key, $data)
@@ -288,7 +277,6 @@ class FilterPersistor
         $data = serialize($data);
 
         if (($fp = $this->openFile($this->data['file'], 'ab')) !== false) {
-
             @flock($fp, LOCK_EX);
 
             // Set line, we don't use PHP_EOL to keep it cross-platform compatible
@@ -312,17 +300,16 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return bool
+     *
      * @throws \Exception
      */
     private function deleteKey($key)
     {
         if ($this->getKey($key) !== false) {
-
             if ($this->replaceKey($key, false)) {
-
                 if ($this->options['cache'] === true && array_key_exists($key, $this->data['cache'])) {
                     unset($this->data['cache'][$key]);
                 }
@@ -336,12 +323,12 @@ class FilterPersistor
 
     /**
      * @return bool
+     *
      * @throws \Exception
      */
     private function flushDatabase()
     {
         if (($fp = $this->openFile($this->data['file'], 'wb')) !== false) {
-
             @fclose($fp);
 
             if ($this->options['cache'] === true) {
@@ -355,19 +342,19 @@ class FilterPersistor
     }
 
     /**
-     * @param $data
-     * @param $reverse
+     * @param mixed $data
+     * @param bool  $reverse
      *
      * @return array|mixed
      */
     private function preserveLines($data, $reverse)
     {
         if ($reverse) {
-            $from = ["\\n", "\\r"];
+            $from = ['\\n', '\\r'];
             $to = ["\n", "\r"];
         } else {
             $from = ["\n", "\r"];
-            $to = ["\\n", "\\r"];
+            $to = ['\\n', '\\r'];
         }
 
         if (is_string($data)) {
@@ -382,9 +369,10 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return bool
+     *
      * @throws \Exception
      */
     private function isValidKey($key)
@@ -407,9 +395,10 @@ class FilterPersistor
     }
 
     /**
-     * @param $data
+     * @param mixed $data
      *
      * @return bool
+     *
      * @throws \Exception
      */
     private function isValidData($data)
@@ -422,9 +411,10 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return mixed
+     *
      * @throws \Exception
      */
     public function get($key)
@@ -439,10 +429,11 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
-     * @param $data
+     * @param string $key
+     * @param mixed  $data
      *
      * @return bool
+     *
      * @throws \Exception
      */
     public function set($key, $data)
@@ -457,9 +448,10 @@ class FilterPersistor
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return bool
+     *
      * @throws \Exception
      */
     public function delete($key)
@@ -475,6 +467,7 @@ class FilterPersistor
 
     /**
      * @return bool
+     *
      * @throws \Exception
      */
     public function flush()

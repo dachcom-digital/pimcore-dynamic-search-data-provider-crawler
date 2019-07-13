@@ -32,6 +32,7 @@ class NegativeUriFilter implements PreFetchFilterInterface
      * @param UriInterface $uri
      *
      * @return bool
+     *
      * @throws \Exception
      */
     public function match(UriInterface $uri)

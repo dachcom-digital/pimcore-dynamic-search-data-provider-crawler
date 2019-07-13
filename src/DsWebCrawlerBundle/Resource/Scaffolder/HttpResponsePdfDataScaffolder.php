@@ -30,7 +30,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isBaseResource($resource)
     {
@@ -38,7 +38,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isApplicable($resource): bool
     {
@@ -58,7 +58,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setup(ContextDataInterface $contextData, $resource): array
     {
@@ -75,6 +75,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
 
         if ($statusCode !== 200) {
             $this->log('debug', sprintf('skip transform [ %s ] because of wrong status code [ %s ]', $uri, $statusCode));
+
             return [];
         }
 
@@ -109,6 +110,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
 
         if ($pdfToTextBin === false) {
             $this->log('DEBUG', 'Cannot index PDF Document: no pdf to text converter found');
+
             return null;
         }
 

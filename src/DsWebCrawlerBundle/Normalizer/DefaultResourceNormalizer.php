@@ -22,14 +22,14 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -37,7 +37,7 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
@@ -53,11 +53,10 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
@@ -69,11 +68,10 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
@@ -92,11 +90,10 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         }
 
         return $normalizedResources;
-
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function generateResourceMetaFromHtmlResource(SpiderResource $resource)
     {
@@ -134,11 +131,10 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         $documentId = sprintf('%s_%d', $resourceCollectionType, $resourceId);
 
         return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
-
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function generateResourceMetaFromPdfResource(array $resourceAttributes)
     {
@@ -163,6 +159,5 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         $documentId = sprintf('asset_%d', $value);
 
         return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
-
     }
 }

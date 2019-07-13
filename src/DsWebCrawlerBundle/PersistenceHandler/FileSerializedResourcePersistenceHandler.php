@@ -7,7 +7,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use VDB\Spider\Downloader\Downloader;
 use VDB\Spider\PersistenceHandler\PersistenceHandlerInterface;
 use VDB\Spider\PersistenceHandler\FilePersistenceHandler;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler implements PersistenceHandlerInterface
 {
@@ -25,7 +25,6 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
     }
 
     /**
-     *
      * The path that was provided with a default filename appended if it is
      * a path ending in a / or if it's not a file. This is because we don't want to persist
      * the directories as files. This is similar to wget behaviour.
@@ -49,9 +48,9 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
     }
 
     /**
-     * @param Resource $resource
+     * @param SpiderResource $resource
      */
-    public function persist(Resource $resource)
+    public function persist(SpiderResource $resource)
     {
         $path = rtrim($this->getResultPath() . $this->getFileSystemPath($resource), '/');
         if (!is_dir($path)) {

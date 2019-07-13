@@ -27,6 +27,7 @@
         }
     },
     "require": {
+        "pimcore/pimcore": "^5.8.0",
         "vdb/php-spider": "^0.4"
     }
 }

@@ -5,7 +5,7 @@ namespace DsWebCrawlerBundle\Resource\FieldTransformer\Html;
 use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class LanguageExtractor implements FieldTransformerInterface
 {
@@ -15,7 +15,7 @@ class LanguageExtractor implements FieldTransformerInterface
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -23,7 +23,7 @@ class LanguageExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -31,7 +31,7 @@ class LanguageExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
@@ -39,7 +39,7 @@ class LanguageExtractor implements FieldTransformerInterface
             return null;
         }
 
-        /** @var Resource $resource */
+        /** @var SpiderResource $resource */
         $resource = $resourceContainer->getResource();
 
         $stream = $resource->getResponse()->getBody();
@@ -52,7 +52,6 @@ class LanguageExtractor implements FieldTransformerInterface
         $language = str_replace('_', '-', $language);
 
         return $language;
-
     }
 
     /**
@@ -88,5 +87,4 @@ class LanguageExtractor implements FieldTransformerInterface
 
         return $l;
     }
-
 }

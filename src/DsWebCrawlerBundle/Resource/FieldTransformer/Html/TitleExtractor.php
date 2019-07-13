@@ -6,7 +6,7 @@ use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class TitleExtractor implements FieldTransformerInterface
 {
@@ -16,7 +16,7 @@ class TitleExtractor implements FieldTransformerInterface
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -24,7 +24,7 @@ class TitleExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -32,7 +32,7 @@ class TitleExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
@@ -40,7 +40,7 @@ class TitleExtractor implements FieldTransformerInterface
             return null;
         }
 
-         /** @var Resource $resource */
+        /** @var SpiderResource $resource */
         $resource = $resourceContainer->getResource();
 
         /** @var Crawler $crawler */
@@ -55,6 +55,5 @@ class TitleExtractor implements FieldTransformerInterface
         $value = (string) $crawler->filterXpath('//title')->text();
 
         return $value;
-
     }
 }

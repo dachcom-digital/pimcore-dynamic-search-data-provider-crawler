@@ -37,7 +37,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -45,7 +45,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function warmUp(ContextDataInterface $contextData)
     {
@@ -53,7 +53,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function coolDown(ContextDataInterface $contextData)
     {
@@ -62,7 +62,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function cancelledShutdown(ContextDataInterface $contextData)
     {
@@ -71,7 +71,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function emergencyShutdown(ContextDataInterface $contextData)
     {
@@ -80,7 +80,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function provideAll(ContextDataInterface $contextData)
     {
@@ -89,7 +89,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function provideSingle(ContextDataInterface $contextData, ResourceMetaInterface $resourceMeta)
     {
@@ -98,7 +98,7 @@ class CrawlerDataProvider implements DataProviderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver, string $providerBehaviour)
     {

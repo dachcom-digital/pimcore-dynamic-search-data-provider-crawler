@@ -29,7 +29,7 @@ trait LogDispatcher
      *
      * @throws \Exception
      */
-    function setDispatcher(EventDispatcherInterface $dispatcher)
+    public function setDispatcher(EventDispatcherInterface $dispatcher)
     {
         $this->filterPersistor = new FilterPersistor();
         $this->dispatcher = $dispatcher;
@@ -41,7 +41,7 @@ trait LogDispatcher
      *
      * @throws \Exception
      */
-    function notifyDispatcher(UriInterface $uri, $filterType)
+    public function notifyDispatcher(UriInterface $uri, $filterType)
     {
         $stringUri = $uri->toString();
         $saveUri = md5($stringUri);
@@ -54,6 +54,5 @@ trait LogDispatcher
         $this->filterPersistor->set($saveUri, time());
         $event = new GenericEvent($this, ['uri' => $uri, 'filterType' => $filterType]);
         $this->dispatcher->dispatch(SpiderEvents::SPIDER_CRAWL_FILTER_PREFETCH, $event);
-
     }
 }

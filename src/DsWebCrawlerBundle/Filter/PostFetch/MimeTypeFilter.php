@@ -3,7 +3,7 @@
 namespace DsWebCrawlerBundle\Filter\PostFetch;
 
 use VDB\Spider\Filter\PostFetchFilterInterface;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class MimeTypeFilter implements PostFetchFilterInterface
 {
@@ -13,9 +13,7 @@ class MimeTypeFilter implements PostFetchFilterInterface
     protected $allowedMimeType = [];
 
     /**
-     * MimeTypeFilter constructor.
-     *
-     * @param $allowedMimeType
+     * @param array $allowedMimeType
      */
     public function __construct($allowedMimeType)
     {
@@ -23,11 +21,11 @@ class MimeTypeFilter implements PostFetchFilterInterface
     }
 
     /**
-     * @param Resource $resource
+     * @param SpiderResource $resource
      *
      * @return bool
      */
-    public function match(Resource $resource)
+    public function match(SpiderResource $resource)
     {
         $hasContentType = count(
                 array_intersect(

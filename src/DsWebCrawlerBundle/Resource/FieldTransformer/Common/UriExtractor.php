@@ -5,7 +5,7 @@ namespace DsWebCrawlerBundle\Resource\FieldTransformer\Common;
 use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use DynamicSearchBundle\Resource\FieldTransformerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use VDB\Spider\Resource;
+use VDB\Spider\Resource as SpiderResource;
 
 class UriExtractor implements FieldTransformerInterface
 {
@@ -15,7 +15,7 @@ class UriExtractor implements FieldTransformerInterface
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -23,7 +23,7 @@ class UriExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -31,7 +31,7 @@ class UriExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
@@ -39,7 +39,7 @@ class UriExtractor implements FieldTransformerInterface
             return null;
         }
 
-        /** @var Resource $resource */
+        /** @var SpiderResource $resource */
         $resource = $resourceContainer->getResource();
 
         $value = $resource->getUri()->toString();

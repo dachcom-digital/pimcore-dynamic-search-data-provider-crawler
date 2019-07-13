@@ -77,7 +77,7 @@ class LogEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setCrawlType(string $crawlType)
     {
@@ -85,7 +85,7 @@ class LogEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
     {
@@ -222,9 +222,9 @@ class LogEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param              $name
+     * @param string       $name
      * @param GenericEvent $event
-     * @param              $debugLevel
+     * @param string       $debugLevel
      * @param string       $additionalMessage
      */
     protected function logEvent($name, GenericEvent $event, $debugLevel = 'debug', $additionalMessage = '')
@@ -241,7 +241,6 @@ class LogEventSubscriber implements EventSubscriberInterface
         ]);
 
         if ($triggerLog) {
-
             $prefix = '[spider.' . $name . '] ';
 
             $message = $prefix;

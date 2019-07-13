@@ -14,7 +14,7 @@ class TextExtractor implements FieldTransformerInterface
     protected $options;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
     {
@@ -35,7 +35,7 @@ class TextExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setOptions(array $options)
     {
@@ -43,7 +43,7 @@ class TextExtractor implements FieldTransformerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
     {
@@ -61,7 +61,6 @@ class TextExtractor implements FieldTransformerInterface
         $content = $this->cleanHtml($content);
 
         return $content;
-
     }
 
     /**
@@ -91,7 +90,6 @@ class TextExtractor implements FieldTransformerInterface
         }
 
         if ($documentHasDelimiter && !empty($searchStartIndicator) && !empty($searchEndIndicator)) {
-
             preg_match_all(
                 '%' . $searchStartIndicator . '(.*?)' . $searchEndIndicator . '%si',
                 $html,
