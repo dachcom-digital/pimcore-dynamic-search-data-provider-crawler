@@ -44,26 +44,15 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         /** @var Document $document */
         $document = $resourceContainer->getResource();
 
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
+        // @todo: localized hardlink data detection!
+        // @todo: Related document detection! (some content parts could be inherited)
+        // @todo: How to handle Snippets?
 
-            // @todo: Related document detection! (some content parts could be inherited)
+        $documentId = sprintf('%s_%d', 'document', $document->getId());
+        $path = $document->getRealFullPath();
+        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path]);
 
-            $this->executeCrawl($dataProvider, $contextData, $document->getRealFullPath());
-
-        }
-
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
-
-            // @todo: Related document detection! (some content parts could be inherited)
-
-            $documentId = sprintf('%s_%d', 'document', $document->getId());
-            $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType());
-
-            return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-
-        }
-
-        return [];
+        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
 
     }
 
@@ -75,19 +64,11 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         /** @var Asset $asset */
         $asset = $resourceContainer->getResource();
 
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-            $this->executeCrawl($dataProvider, $contextData, $asset->getRealFullPath());
-        }
+        $documentId = sprintf('%s_%d', 'asset', $asset->getId());
+        $path = $asset->getRealFullPath();
+        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path]);
 
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
-
-            $documentId = sprintf('%s_%d', 'asset', $asset->getId());
-            $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType());
-
-            return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
-        }
-
-        return [];
+        return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
 
     }
 
@@ -99,28 +80,18 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
 
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_UPDATE) {
-
-            /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
-            $linkGenerator = $object->getClass()->getLinkGenerator();
-            if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
-                $this->executeCrawl($dataProvider, $contextData, $linkGenerator->generate($object));
-            } else {
-                throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
-            }
-        }
-
-        if ($contextData->getContextDispatchType() === ContextDataInterface::CONTEXT_DISPATCH_TYPE_DELETE) {
-
-            $normalizedResources = [];
+        /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
+        $linkGenerator = $object->getClass()->getLinkGenerator();
+        if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
             $documentId = sprintf('%s_%d', 'object', $object->getId());
-            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType());
-            $normalizedResources[] = new NormalizedDataResource(null, $resourceMeta);
-
-            return $normalizedResources;
+            $path = $linkGenerator->generate($object);
+            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['path' => $path]);
+            $normalizedResources = new NormalizedDataResource(null, $resourceMeta);
+        } else {
+            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
         }
 
-        return [];
+        return $normalizedResources;
 
     }
 

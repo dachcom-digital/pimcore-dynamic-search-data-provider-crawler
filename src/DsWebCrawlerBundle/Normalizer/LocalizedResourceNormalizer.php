@@ -53,6 +53,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         // @todo: localized hardlink data detection!
         // @todo: Related document detection! (some content parts could be inherited)
+        // @todo: How to handle Snippets?
 
         $documentLocale = $document->getProperty('language');
 
@@ -66,7 +67,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%s_%d', 'document', $documentLocale, $document->getId());
         $path = $document->getRealFullPath();
-        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path]);
+        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path], ['locale' => $documentLocale]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
 
@@ -82,7 +83,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%d', 'asset', $asset->getId());
         $path = $asset->getRealFullPath();
-        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path]);
+        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path], ['locale' => null]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
 
@@ -96,20 +97,22 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
 
+        $normalizedResources = [];
+
         /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
         $linkGenerator = $object->getClass()->getLinkGenerator();
         if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
             foreach ($this->options['locales'] as $locale) {
                 $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
                 $path = $linkGenerator->generate($object, ['_locale' => $locale]);
-                $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['path' => $path]);
-                $normalizedResources[] = new NormalizedDataResource(null, $resourceMeta);
+                $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['path' => $path], ['locale' => $locale]);
+                $normalizedResources[] = new NormalizedDataResource($resourceContainer, $resourceMeta);
             }
         } else {
-            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
+            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
         }
 
-        return [];
+        return $normalizedResources;
 
     }
 
@@ -166,7 +169,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%s_%d', $resourceCollectionType, $contentLanguage, $resourceId);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, []);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
 
     }
 
@@ -195,7 +198,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $resourceType = 'document';
         $documentId = sprintf('asset_%d', $value);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, []);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
 
     }
 }

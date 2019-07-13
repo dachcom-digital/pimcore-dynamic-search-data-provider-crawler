@@ -28,7 +28,7 @@ class PimcoreElementScaffolder implements ResourceScaffolderInterface
      */
     public function isApplicable($resource): bool
     {
-        if ($resource instanceof Asset) {
+        if ($resource instanceof Asset\Document) {
             return true;
         } elseif ($resource instanceof Document) {
             return true;
@@ -49,7 +49,7 @@ class PimcoreElementScaffolder implements ResourceScaffolderInterface
         $type = null;
         $dataType = null;
 
-        if ($resource instanceof Asset) {
+        if ($resource instanceof Asset\Document) {
             $type = 'asset';
             $dataType = $resource->getType();
         } elseif ($resource instanceof Document) {
