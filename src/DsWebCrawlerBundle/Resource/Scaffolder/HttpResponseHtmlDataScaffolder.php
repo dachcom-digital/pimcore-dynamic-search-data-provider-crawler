@@ -165,6 +165,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
      */
     protected function log($level, $message)
     {
-        $this->logger->log($level, $message, 'http_response_html', $this->contextData->getName());
+        $contextName = $this->contextData instanceof ContextDataInterface ? $this->contextData->getName() : '--';
+        $this->logger->log($level, $message, 'http_response_html', $contextName);
     }
 }

@@ -13,7 +13,7 @@ class DsWebCrawlerBundle extends AbstractPimcoreBundle
 
     const PACKAGE_NAME = 'dachcom-digital/dynamic-search-data-provider-crawler';
 
-    const PROVIDER_NAME = 'webCrawler';
+    const PROVIDER_NAME = 'web_crawler';
 
     /**
      * @param ContainerBuilder $container

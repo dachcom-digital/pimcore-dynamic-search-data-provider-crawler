@@ -1,0 +1,10 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    DsWebCrawlerBundle\Guard\DefaultDataResourceGuard:
+        tags:
+            - {name: dynamic_search.context_guard }

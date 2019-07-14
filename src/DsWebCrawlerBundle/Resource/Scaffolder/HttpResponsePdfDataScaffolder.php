@@ -215,6 +215,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
      */
     protected function log($level, $message)
     {
-        $this->logger->log($level, $message, 'http_response_pdf', $this->contextData->getName());
+        $contextName = $this->contextData instanceof ContextDataInterface ? $this->contextData->getName() : '--';
+        $this->logger->log($level, $message, 'http_response_pdf', $contextName);
     }
 }

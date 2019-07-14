@@ -101,6 +101,8 @@ class CrawlerDataProvider implements DataProviderInterface
             throw new ProviderException('resource option "path" must be set to provide single data.', DsWebCrawlerBundle::PROVIDER_NAME);
         }
 
+        $this->configuration['path'] = $options['path'];
+
         $this->crawlerService->initSingleCrawl($resourceMeta, $contextData->getName(), $contextData->getContextDispatchType(), $this->configuration);
         $this->crawlerService->process();
     }
