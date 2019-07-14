@@ -2,9 +2,11 @@
 
 namespace DsWebCrawlerBundle\Provider;
 
+use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\Service\CrawlerServiceInterface;
 use DsWebCrawlerBundle\Service\FileWatcherServiceInterface;
 use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Exception\ProviderException;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -93,6 +95,12 @@ class CrawlerDataProvider implements DataProviderInterface
      */
     public function provideSingle(ContextDataInterface $contextData, ResourceMetaInterface $resourceMeta)
     {
+        $options = $resourceMeta->getResourceOptions();
+
+        if (!is_string($options['path'])) {
+            throw new ProviderException('resource option "path" must be set to provide single data.', DsWebCrawlerBundle::PROVIDER_NAME);
+        }
+
         $this->crawlerService->initSingleCrawl($resourceMeta, $contextData->getName(), $contextData->getContextDispatchType(), $this->configuration);
         $this->crawlerService->process();
     }
@@ -171,9 +179,8 @@ class CrawlerDataProvider implements DataProviderInterface
         $defaults = [];
 
         $resolver->setDefaults($defaults);
-        $resolver->setRequired(array_merge(['path', 'host'], array_keys($defaults)));
+        $resolver->setRequired(array_merge(['host'], array_keys($defaults)));
 
-        $resolver->setAllowedTypes('path', ['string']);
         $resolver->setAllowedTypes('host', ['string']);
     }
 }
