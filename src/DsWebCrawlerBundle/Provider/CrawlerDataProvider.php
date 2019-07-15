@@ -9,6 +9,10 @@ use DynamicSearchBundle\Context\ContextDataInterface;
 use DynamicSearchBundle\Exception\ProviderException;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
+use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
+use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CrawlerDataProvider implements DataProviderInterface
@@ -79,6 +83,22 @@ class CrawlerDataProvider implements DataProviderInterface
     {
         $this->fileWatcherService->resetPersistenceStore();
         $this->fileWatcherService->resetUriFilterPersistenceStore();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateUntrustedResource(ContextDataInterface $contextData, $resource)
+    {
+        if ($resource instanceof Asset\Document) {
+            return true;
+        } elseif ($resource instanceof Document) {
+            return true;
+        } elseif ($resource instanceof DataObject\Concrete) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
