@@ -65,7 +65,7 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
     }
 
     /**
-     * @return Resource
+     * @return SpiderResource
      */
     public function current()
     {

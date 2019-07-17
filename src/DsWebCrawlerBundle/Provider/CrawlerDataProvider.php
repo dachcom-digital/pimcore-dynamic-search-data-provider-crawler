@@ -12,7 +12,6 @@ use DynamicSearchBundle\Provider\DataProviderInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
-use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CrawlerDataProvider implements DataProviderInterface
