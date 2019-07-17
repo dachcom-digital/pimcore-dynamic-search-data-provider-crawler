@@ -1,6 +1,6 @@
 {
     "name": "dachcom-digital/dynamic-search-data-provider-crawler",
-    "type": "pimcore-bundle",
+    "type": "dynamic-search-provider-bundle",
     "license": "GPL-3.0+",
     "description": "",
     "keywords": ["pimcore", "search", "dynamic-search", "data-provider","crawler"],
@@ -16,14 +16,6 @@
     "autoload": {
         "psr-4": {
             "DsWebCrawlerBundle\\": "src/DsWebCrawlerBundle"
-        }
-    },
-
-    "extra": {
-        "pimcore": {
-            "bundles": [
-                "DsWebCrawlerBundle\\DsWebCrawlerBundle"
-            ]
         }
     },
     "require": {

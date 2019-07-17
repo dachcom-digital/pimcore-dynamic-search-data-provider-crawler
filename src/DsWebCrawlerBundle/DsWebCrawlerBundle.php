@@ -3,16 +3,12 @@
 namespace DsWebCrawlerBundle;
 
 use DsWebCrawlerBundle\DependencyInjection\Compiler\EventSubscriberPass;
-use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
-use Pimcore\Extension\Bundle\Traits\PackageVersionTrait;
+use DynamicSearchBundle\Provider\Extension\ProviderBundleInterface;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class DsWebCrawlerBundle extends AbstractPimcoreBundle
+class DsWebCrawlerBundle extends Bundle implements ProviderBundleInterface
 {
-    use PackageVersionTrait;
-
-    const PACKAGE_NAME = 'dachcom-digital/dynamic-search-data-provider-crawler';
-
     const PROVIDER_NAME = 'web_crawler';
 
     /**
@@ -28,8 +24,8 @@ class DsWebCrawlerBundle extends AbstractPimcoreBundle
     /**
      * {@inheritdoc}
      */
-    protected function getComposerPackageName(): string
+    public function getProviderName(): string
     {
-        return self::PACKAGE_NAME;
+        return self::PROVIDER_NAME;
     }
 }
