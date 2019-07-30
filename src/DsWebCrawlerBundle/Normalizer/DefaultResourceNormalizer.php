@@ -50,7 +50,7 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%d', 'document', $document->getId());
         $path = $document->getRealFullPath();
-        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path]);
+        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), null, ['path' => $path]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
     }
@@ -65,7 +65,7 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%d', 'asset', $asset->getId());
         $path = $asset->getRealFullPath();
-        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path]);
+        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), null, ['path' => $path]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
     }
@@ -83,7 +83,7 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
             $documentId = sprintf('%s_%d', 'object', $object->getId());
             $path = $linkGenerator->generate($object);
-            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['path' => $path]);
+            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), $object->getClassName(), ['path' => $path]);
             $normalizedResources = new NormalizedDataResource(null, $resourceMeta);
         } else {
             throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
@@ -130,7 +130,7 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%d', $resourceCollectionType, $resourceId);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, null);
     }
 
     /**
@@ -158,6 +158,6 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         $resourceType = 'document';
         $documentId = sprintf('asset_%d', $value);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, null);
     }
 }

@@ -67,7 +67,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%s_%d', 'document', $documentLocale, $document->getId());
         $path = $document->getRealFullPath();
-        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), ['path' => $path], ['locale' => $documentLocale]);
+        $resourceMeta = new ResourceMeta($documentId, $document->getId(), 'document', $document->getType(), null, ['path' => $path], ['locale' => $documentLocale]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
     }
@@ -82,7 +82,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%d', 'asset', $asset->getId());
         $path = $asset->getRealFullPath();
-        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), ['path' => $path], ['locale' => null]);
+        $resourceMeta = new ResourceMeta($documentId, $asset->getId(), 'asset', $asset->getType(), null, ['path' => $path], ['locale' => null]);
 
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
     }
@@ -103,7 +103,8 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
             foreach ($this->options['locales'] as $locale) {
                 $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
                 $path = $linkGenerator->generate($object, ['_locale' => $locale]);
-                $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), ['path' => $path], ['locale' => $locale]);
+                $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), $object->getClassName(), ['path' => $path],
+                    ['locale' => $locale]);
                 $normalizedResources[] = new NormalizedDataResource($resourceContainer, $resourceMeta);
             }
         } else {
@@ -127,9 +128,11 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $resourceId = null;
         $resourceCollectionType = null;
         $resourceType = null;
+        $resourceSubType = null;
 
         $objectQuery = '//meta[@name="dynamic-search:object-id"]';
         $objectTypeQuery = '//meta[@name="dynamic-search:object-type"]';
+        $objectSubTypeQuery = '//meta[@name="dynamic-search:object-sub-type"]';
         $pageQuery = '//meta[@name="dynamic-search:page-id"]';
 
         if ($crawler->filterXpath($objectQuery)->count() > 0) {
@@ -138,6 +141,9 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
             $resourceId = (string) $crawler->filterXpath($objectQuery)->attr('content');
             if ($crawler->filterXpath($objectTypeQuery)->count() > 0) {
                 $resourceType = (string) $crawler->filterXpath($objectTypeQuery)->attr('content');
+            }
+            if ($crawler->filterXpath($objectSubTypeQuery)->count() > 0) {
+                $resourceSubType = (string) $crawler->filterXpath($objectSubTypeQuery)->attr('content');
             }
         } elseif ($crawler->filterXpath($pageQuery)->count() > 0) {
             $resourceCollectionType = 'document';
@@ -166,7 +172,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 
         $documentId = sprintf('%s_%s_%d', $resourceCollectionType, $contentLanguage, $resourceId);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, $resourceSubType);
     }
 
     /**
@@ -194,6 +200,6 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $resourceType = 'document';
         $documentId = sprintf('asset_%d', $value);
 
-        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType);
+        return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, null);
     }
 }

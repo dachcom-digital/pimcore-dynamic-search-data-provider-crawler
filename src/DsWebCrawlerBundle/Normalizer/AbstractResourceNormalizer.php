@@ -57,6 +57,8 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
+     *
+     * @throws NormalizerException
      */
     protected function normalizeSpiderResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
     {
