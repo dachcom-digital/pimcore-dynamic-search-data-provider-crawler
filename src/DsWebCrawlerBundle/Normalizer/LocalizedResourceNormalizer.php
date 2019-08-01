@@ -103,8 +103,15 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
             foreach ($this->options['locales'] as $locale) {
                 $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
                 $path = $linkGenerator->generate($object, ['_locale' => $locale]);
-                $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), $object->getClassName(), ['path' => $path],
-                    ['locale' => $locale]);
+                $resourceMeta = new ResourceMeta(
+                    $documentId,
+                    $object->getId(),
+                    'object',
+                    $object->getType(),
+                    $object->getClassName(),
+                    ['path'   => $path],
+                    ['locale' => $locale]
+                );
                 $normalizedResources[] = new NormalizedDataResource($resourceContainer, $resourceMeta);
             }
         } else {
