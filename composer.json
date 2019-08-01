@@ -19,7 +19,7 @@
         }
     },
     "require": {
-        "dachcom-digital/dynamic-search": "^0.3",
+        "dachcom-digital/dynamic-search": "^0.4",
         "pimcore/pimcore": "^5.8.0",
         "vdb/php-spider": "^0.4"
     }

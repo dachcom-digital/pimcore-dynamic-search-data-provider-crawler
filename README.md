@@ -68,3 +68,88 @@ dynamic_search:
 | Name                                 | Default Value | Description |
 |:-------------------------------------|:--------------|:------------|
 |`host`                                | null          |             |
+
+***
+
+## Resource Normalizer
+
+### DefaultResourceNormalizer
+Identifier: `web_crawler_default_resource_normalizer`
+Normalize simple documents
+Options: none
+
+### LocalizedResourceNormalizer
+Identifier: `web_crawler_localized_resource_normalizer`
+Scaffold localized documents
+
+Options:
+
+| Name                          | Default Value                           | Allowed Type    | Description |
+|:------------------------------|:----------------------------------------|:----------------|:------------|
+|`locales`                      | all pimcore enabled languages           | array           |             |
+|`skip_not_localized_documents` | true                                    | bool            | if false, an exception rises if a document/object has no valid locale |
+
+***
+
+## Transformer
+
+### Scaffolder
+
+##### HttpResponseHtmlDataScaffolder
+Identifier: `http_response_html`   
+Simple object scaffolder.   
+Supported types: `VDB\Spider\Resource` with content-type `text/html`.
+
+##### HttpResponsePdfDataScaffolder
+Identifier: `http_response_pdf`   
+Simple object scaffolder.   
+Supported types: `VDB\Spider\Resource` with content-type `application/pdf`.
+
+##### PimcoreElementScaffolder
+Identifier: `pimcore_element`   
+Simple object scaffolder.   
+Supported types: `Asset`, `Document`, `DataObject\Concrete`.
+
+### Field Transformer
+
+##### UriExtractor
+Identifier: `resource_uri_extractor`   
+Supported Scaffolder: `http_response_html`, `http_response_pdf`
+
+Return Type: `string|null`   
+Options: none
+
+##### LanguageExtractor
+Identifier: `resource_language_extractor`   
+Supported Scaffolder: `http_response_html`, `http_response_pdf`
+
+Return Type: `string|null`
+Options: none
+
+##### MetaExtractor
+Identifier: `resource_meta_extractor`   
+Supported Scaffolder: `http_response_html`
+
+Return Type: `string|null`
+Options: none
+
+##### HtmlTagExtractor
+Identifier: `resource_html_tag_content_extractor`   
+Supported Scaffolder: `http_response_html`
+
+Return Type: `string|null`
+Options: none
+
+##### TextExtractor
+Identifier: `resource_text_extractor`   
+Supported Scaffolder: `http_response_html`, `http_response_pdf`
+
+Return Type: `string|null`
+Options: none
+
+##### TitleExtractor
+Identifier: `resource_title_extractor`   
+Supported Scaffolder: `http_response_html`, `http_response_pdf`
+
+Return Type: `string|null`
+Options: none
