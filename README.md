@@ -96,17 +96,17 @@ Options:
 ### Scaffolder
 
 ##### HttpResponseHtmlDataScaffolder
-Identifier: `http_response_html`   
+Identifier: `http_response_html_scaffolder`   
 Simple object scaffolder.   
 Supported types: `VDB\Spider\Resource` with content-type `text/html`.
 
 ##### HttpResponsePdfDataScaffolder
-Identifier: `http_response_pdf`   
+Identifier: `http_response_pdf_scaffolder`   
 Simple object scaffolder.   
 Supported types: `VDB\Spider\Resource` with content-type `application/pdf`.
 
 ##### PimcoreElementScaffolder
-Identifier: `pimcore_element`   
+Identifier: `pimcore_element_scaffolder`   
 Simple object scaffolder.   
 Supported types: `Asset`, `Document`, `DataObject\Concrete`.
 
@@ -114,42 +114,42 @@ Supported types: `Asset`, `Document`, `DataObject\Concrete`.
 
 ##### UriExtractor
 Identifier: `resource_uri_extractor`   
-Supported Scaffolder: `http_response_html`, `http_response_pdf`
+Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffolder`
 
 Return Type: `string|null`   
 Options: none
 
 ##### LanguageExtractor
 Identifier: `resource_language_extractor`   
-Supported Scaffolder: `http_response_html`, `http_response_pdf`
+Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffolder`
 
 Return Type: `string|null`
 Options: none
 
 ##### MetaExtractor
 Identifier: `resource_meta_extractor`   
-Supported Scaffolder: `http_response_html`
+Supported Scaffolder: `http_response_html_scaffolder`
 
 Return Type: `string|null`
 Options: none
 
 ##### HtmlTagExtractor
 Identifier: `resource_html_tag_content_extractor`   
-Supported Scaffolder: `http_response_html`
+Supported Scaffolder: `http_response_html_scaffolder`
 
 Return Type: `string|null`
 Options: none
 
 ##### TextExtractor
 Identifier: `resource_text_extractor`   
-Supported Scaffolder: `http_response_html`, `http_response_pdf`
+Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffolder`
 
 Return Type: `string|null`
 Options: none
 
 ##### TitleExtractor
 Identifier: `resource_title_extractor`   
-Supported Scaffolder: `http_response_html`, `http_response_pdf`
+Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffolder`
 
 Return Type: `string|null`
 Options: none
