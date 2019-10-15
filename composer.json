@@ -20,7 +20,12 @@
     },
     "require": {
         "dachcom-digital/dynamic-search": "^0.6",
-        "pimcore/pimcore": "^5.8.0",
-        "vdb/php-spider": "^0.5"
+        "pimcore/pimcore": "^5.8.0 | ^6.0",
+        "vdb/php-spider": "^0.4"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.6-dev"
+        }
     }
 }
