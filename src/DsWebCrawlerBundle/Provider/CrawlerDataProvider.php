@@ -87,6 +87,16 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
+    public function checkUntrustedResourceProxy(ContextDataInterface $contextData, $resource)
+    {
+        // not required / implemented in crawler provider!
+
+        return $resource;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function validateUntrustedResource(ContextDataInterface $contextData, $resource)
     {
         if ($resource instanceof Asset\Document) {
