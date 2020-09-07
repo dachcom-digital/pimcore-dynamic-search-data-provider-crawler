@@ -23,6 +23,12 @@
         "pimcore/pimcore": "^5.8.0 | ^6.3",
         "vdb/php-spider": "^0.4"
     },
+    "require-dev": {
+        "codeception/codeception": "~2.4.0",
+        "phpstan/phpstan": "^0.12",
+        "phpstan/phpstan-symfony": "^0.12",
+        "symplify/easy-coding-standard": "^5.4"
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "0.6-dev"
