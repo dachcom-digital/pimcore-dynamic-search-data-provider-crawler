@@ -91,7 +91,7 @@ class CrawlerDataProvider implements DataProviderInterface
     {
         // not required / implemented in crawler provider!
 
-        return $resource;
+        return null;
     }
 
     /**
