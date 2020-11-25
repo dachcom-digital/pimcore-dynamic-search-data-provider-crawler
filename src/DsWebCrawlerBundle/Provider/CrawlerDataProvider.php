@@ -5,7 +5,7 @@ namespace DsWebCrawlerBundle\Provider;
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\Service\CrawlerServiceInterface;
 use DsWebCrawlerBundle\Service\FileWatcherServiceInterface;
-use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Exception\ProviderException;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
@@ -44,6 +44,67 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
+    public static function configureOptions(OptionsResolver $resolver)
+    {
+        $options = [
+            'always'                                 => function (OptionsResolver $spoolResolver) {
+
+                $options = [
+                    'own_host_only'      => false,
+                    'allow_subdomains'   => false,
+                    'allow_query_in_url' => false,
+                    'allow_hash_in_url'  => false,
+                    'allowed_mime_types' => ['text/html', 'application/pdf'],
+                    'allowed_schemes'    => ['http'],
+                    'content_max_size'   => 0,
+                    'core_invalid_links' => '@.*\.(js|JS|gif|GIF|jpg|JPG|png|PNG|ico|ICO|eps|jpeg|JPEG|bmp|BMP|css|CSS|sit|wmf|zip|ppt|mpg|xls|gz|rpm|tgz|mov|MOV|exe|mp3|MP3|kmz|gpx|kml|swf|SWF)$@'
+                ];
+
+                $spoolResolver->setDefaults($options);
+                $spoolResolver->setRequired(array_keys($options));
+                $spoolResolver->setAllowedTypes('own_host_only', ['bool']);
+                $spoolResolver->setAllowedTypes('allow_subdomains', ['bool']);
+                $spoolResolver->setAllowedTypes('allow_query_in_url', ['bool']);
+                $spoolResolver->setAllowedTypes('allow_hash_in_url', ['bool']);
+                $spoolResolver->setAllowedTypes('allowed_mime_types', ['string[]']);
+                $spoolResolver->setAllowedTypes('allowed_schemes', ['string[]']);
+                $spoolResolver->setAllowedTypes('content_max_size', ['int']);
+                $spoolResolver->setAllowedTypes('core_invalid_links', ['string']);
+            },
+            self::PROVIDER_BEHAVIOUR_FULL_DISPATCH   => function (OptionsResolver $spoolResolver) {
+
+                $options = [
+                    'seed'               => null,
+                    'valid_links'        => [],
+                    'user_invalid_links' => [],
+                    'max_link_depth'     => 15,
+                    'max_crawl_limit'    => 0,
+                ];
+
+                $spoolResolver->setDefaults($options);
+                $spoolResolver->setRequired(array_keys($options));
+                $spoolResolver->setAllowedTypes('seed', ['string']);
+                $spoolResolver->setAllowedTypes('valid_links', ['string[]']);
+                $spoolResolver->setAllowedTypes('user_invalid_links', ['string[]']);
+                $spoolResolver->setAllowedTypes('max_link_depth', ['int']);
+                $spoolResolver->setAllowedTypes('max_crawl_limit', ['int']);
+            },
+            self::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH => function (OptionsResolver $spoolResolver) {
+
+                $spoolResolver->setDefaults([]);
+                $spoolResolver->setRequired(['host']);
+                $spoolResolver->setAllowedTypes('host', ['string']);
+
+            }
+        ];
+
+        $resolver->setDefaults($options);
+        $resolver->setRequired(array_keys($options));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setOptions(array $options)
     {
         $this->configuration = $options;
@@ -52,7 +113,7 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function warmUp(ContextDataInterface $contextData)
+    public function warmUp(ContextDefinitionInterface $contextDefinition)
     {
         $this->fileWatcherService->resetPersistenceStore();
     }
@@ -60,16 +121,7 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function coolDown(ContextDataInterface $contextData)
-    {
-        $this->fileWatcherService->resetPersistenceStore();
-        $this->fileWatcherService->resetUriFilterPersistenceStore();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function cancelledShutdown(ContextDataInterface $contextData)
+    public function coolDown(ContextDefinitionInterface $contextDefinition)
     {
         $this->fileWatcherService->resetPersistenceStore();
         $this->fileWatcherService->resetUriFilterPersistenceStore();
@@ -78,7 +130,7 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function emergencyShutdown(ContextDataInterface $contextData)
+    public function cancelledShutdown(ContextDefinitionInterface $contextDefinition)
     {
         $this->fileWatcherService->resetPersistenceStore();
         $this->fileWatcherService->resetUriFilterPersistenceStore();
@@ -87,7 +139,16 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function checkUntrustedResourceProxy(ContextDataInterface $contextData, $resource)
+    public function emergencyShutdown(ContextDefinitionInterface $contextDefinition)
+    {
+        $this->fileWatcherService->resetPersistenceStore();
+        $this->fileWatcherService->resetUriFilterPersistenceStore();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function checkUntrustedResourceProxy(ContextDefinitionInterface $contextDefinition, $resource)
     {
         // not required / implemented in crawler provider!
 
@@ -97,7 +158,7 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function validateUntrustedResource(ContextDataInterface $contextData, $resource)
+    public function validateUntrustedResource(ContextDefinitionInterface $contextDefinition, $resource)
     {
         if ($resource instanceof Asset\Document) {
             return true;
@@ -113,16 +174,16 @@ class CrawlerDataProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function provideAll(ContextDataInterface $contextData)
+    public function provideAll(ContextDefinitionInterface $contextDefinition)
     {
-        $this->crawlerService->initFullCrawl($contextData->getName(), $contextData->getContextDispatchType(), $this->configuration);
+        $this->crawlerService->initFullCrawl($contextDefinition->getName(), $contextDefinition->getContextDispatchType(), $this->configuration);
         $this->crawlerService->process();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function provideSingle(ContextDataInterface $contextData, ResourceMetaInterface $resourceMeta)
+    public function provideSingle(ContextDefinitionInterface $contextDefinition, ResourceMetaInterface $resourceMeta)
     {
         $options = $resourceMeta->getResourceOptions();
 
@@ -132,86 +193,7 @@ class CrawlerDataProvider implements DataProviderInterface
 
         $this->configuration['path'] = $options['path'];
 
-        $this->crawlerService->initSingleCrawl($resourceMeta, $contextData->getName(), $contextData->getContextDispatchType(), $this->configuration);
+        $this->crawlerService->initSingleCrawl($resourceMeta, $contextDefinition->getName(), $contextDefinition->getContextDispatchType(), $this->configuration);
         $this->crawlerService->process();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function configureOptions(OptionsResolver $resolver, string $providerBehaviour)
-    {
-        $this->configureAlwaysOptions($resolver);
-
-        if ($providerBehaviour === self::PROVIDER_BEHAVIOUR_FULL_DISPATCH) {
-            $this->configureFullDispatchOptions($resolver);
-        } elseif ($providerBehaviour === self::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH) {
-            $this->configureSingleDispatchOptions($resolver);
-        }
-    }
-
-    /**
-     * @param OptionsResolver $resolver
-     */
-    protected function configureAlwaysOptions(OptionsResolver $resolver)
-    {
-        $defaults = [
-            'own_host_only'      => false,
-            'allow_subdomains'   => false,
-            'allow_query_in_url' => false,
-            'allow_hash_in_url'  => false,
-            'allowed_mime_types' => ['text/html', 'application/pdf'],
-            'allowed_schemes'    => ['http'],
-            'content_max_size'   => 0,
-            'core_invalid_links' => '@.*\.(js|JS|gif|GIF|jpg|JPG|png|PNG|ico|ICO|eps|jpeg|JPEG|bmp|BMP|css|CSS|sit|wmf|zip|ppt|mpg|xls|gz|rpm|tgz|mov|MOV|exe|mp3|MP3|kmz|gpx|kml|swf|SWF)$@'
-        ];
-
-        $resolver->setDefaults($defaults);
-        $resolver->setRequired(array_keys($defaults));
-
-        $resolver->setAllowedTypes('own_host_only', ['bool']);
-        $resolver->setAllowedTypes('allow_subdomains', ['bool']);
-        $resolver->setAllowedTypes('allow_query_in_url', ['bool']);
-        $resolver->setAllowedTypes('allow_hash_in_url', ['bool']);
-        $resolver->setAllowedTypes('allowed_mime_types', ['string[]']);
-        $resolver->setAllowedTypes('allowed_schemes', ['string[]']);
-        $resolver->setAllowedTypes('content_max_size', ['int']);
-        $resolver->setAllowedTypes('core_invalid_links', ['string']);
-    }
-
-    /**
-     * @param OptionsResolver $resolver
-     */
-    protected function configureFullDispatchOptions(OptionsResolver $resolver)
-    {
-        $defaults = [
-            'seed'               => null,
-            'valid_links'        => [],
-            'user_invalid_links' => [],
-            'max_link_depth'     => 15,
-            'max_crawl_limit'    => 0,
-        ];
-
-        $resolver->setDefaults($defaults);
-        $resolver->setRequired(array_keys($defaults));
-
-        $resolver->setAllowedTypes('seed', ['string']);
-        $resolver->setAllowedTypes('valid_links', ['string[]']);
-        $resolver->setAllowedTypes('user_invalid_links', ['string[]']);
-        $resolver->setAllowedTypes('max_link_depth', ['int']);
-        $resolver->setAllowedTypes('max_crawl_limit', ['int']);
-    }
-
-    /**
-     * @param OptionsResolver $resolver
-     */
-    protected function configureSingleDispatchOptions(OptionsResolver $resolver)
-    {
-        $defaults = [];
-
-        $resolver->setDefaults($defaults);
-        $resolver->setRequired(array_merge(['host'], array_keys($defaults)));
-
-        $resolver->setAllowedTypes('host', ['string']);
     }
 }

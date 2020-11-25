@@ -4,7 +4,7 @@ namespace DsWebCrawlerBundle\EventSubscriber;
 
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
-use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use Symfony\Component\EventDispatcher\Event;
@@ -155,7 +155,7 @@ class LogEventSubscriber implements EventSubscriberInterface
             $this->logEvent('finished', $event, 'debug', 'persisted links: ' . $this->persisted);
         }
 
-        if ($this->contextDispatchType === ContextDataInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
+        if ($this->contextDispatchType === ContextDefinitionInterface::CONTEXT_DISPATCH_TYPE_INDEX) {
             $this->logEvent('finished', $event, 'debug', 'memory peak usage: ' . $peakMem . 'MB');
             $this->logEvent('finished', $event, 'debug', 'total time: ' . $minutes . ':' . $seconds);
         }

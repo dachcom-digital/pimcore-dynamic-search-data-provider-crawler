@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Normalizer;
 
-use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Exception\NormalizerException;
 use DynamicSearchBundle\Manager\DataManagerInterface;
 use DynamicSearchBundle\Manager\TransformerManagerInterface;
@@ -43,24 +43,24 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function normalizeToResourceStack(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer): array
+    public function normalizeToResourceStack(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer): array
     {
         if ($resourceContainer->getResource() instanceof SpiderResource) {
-            return $this->normalizeSpiderResource($contextData, $resourceContainer);
+            return $this->normalizeSpiderResource($contextDefinition, $resourceContainer);
         } else {
-            return $this->normalizePimcoreResource($contextData, $resourceContainer);
+            return $this->normalizePimcoreResource($contextDefinition, $resourceContainer);
         }
     }
 
     /**
-     * @param ContextDataInterface       $contextData
+     * @param ContextDefinitionInterface $contextDefinition
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      *
      * @throws NormalizerException
      */
-    protected function normalizeSpiderResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    protected function normalizeSpiderResource(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
     {
         $resourceMeta = null;
         if ($resourceContainer->hasAttribute('html')) {
@@ -77,14 +77,14 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
     }
 
     /**
-     * @param ContextDataInterface       $contextData
+     * @param ContextDefinitionInterface $contextDefinition
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      *
      * @throws NormalizerException
      */
-    protected function normalizePimcoreResource(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    protected function normalizePimcoreResource(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
     {
         $resource = $resourceContainer->getResource();
         if (!$resource instanceof ElementInterface) {
@@ -92,49 +92,49 @@ abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
         }
 
         if ($resource instanceof Page) {
-            return $this->normalizePage($contextData, $resourceContainer);
+            return $this->normalizePage($contextDefinition, $resourceContainer);
         }
 
         if ($resource instanceof Asset) {
-            return $this->normalizeAsset($contextData, $resourceContainer);
+            return $this->normalizeAsset($contextDefinition, $resourceContainer);
         }
 
         if ($resource instanceof DataObject) {
-            return $this->normalizeDataObject($contextData, $resourceContainer);
+            return $this->normalizeDataObject($contextDefinition, $resourceContainer);
         }
 
         return [];
     }
 
     /**
-     * @param ContextDataInterface       $contextData
+     * @param ContextDefinitionInterface $contextDefinition
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      *
      * @throws NormalizerException
      */
-    abstract protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
+    abstract protected function normalizePage(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer);
 
     /**
-     * @param ContextDataInterface       $contextData
+     * @param ContextDefinitionInterface $contextDefinition
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      *
      * @throws NormalizerException
      */
-    abstract protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
+    abstract protected function normalizeAsset(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer);
 
     /**
-     * @param ContextDataInterface       $contextData
+     * @param ContextDefinitionInterface $contextDefinition
      * @param ResourceContainerInterface $resourceContainer
      *
      * @return array
      *
      * @throws NormalizerException
      */
-    abstract protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer);
+    abstract protected function normalizeDataObject(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer);
 
     /**
      * @param SpiderResource $resource

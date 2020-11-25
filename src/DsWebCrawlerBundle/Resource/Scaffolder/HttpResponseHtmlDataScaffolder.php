@@ -3,7 +3,7 @@
 namespace DsWebCrawlerBundle\Resource\Scaffolder;
 
 use DOMDocument;
-use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Resource\ResourceScaffolderInterface;
 use Symfony\Component\DomCrawler\Crawler;
@@ -12,9 +12,9 @@ use VDB\Spider\Resource as DataResource;
 class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
 {
     /**
-     * @var ContextDataInterface
+     * @var ContextDefinitionInterface
      */
-    protected $contextData;
+    protected $contextDefinition;
 
     /**
      * @var LoggerInterface
@@ -98,9 +98,9 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
     /**
      * {@inheritdoc}
      */
-    public function setup(ContextDataInterface $contextData, $resource): array
+    public function setup(ContextDefinitionInterface $contextDefinition, $resource): array
     {
-        $this->contextData = $contextData;
+        $this->contextDefinition = $contextDefinition;
 
         if (!$resource instanceof DataResource) {
             return [];
@@ -165,7 +165,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
      */
     protected function log($level, $message)
     {
-        $contextName = $this->contextData instanceof ContextDataInterface ? $this->contextData->getName() : '--';
+        $contextName = $this->contextDefinition instanceof ContextDefinitionInterface ? $this->contextDefinition->getName() : '--';
         $this->logger->log($level, $message, 'http_response_html', $contextName);
     }
 }

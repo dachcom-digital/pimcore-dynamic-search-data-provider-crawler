@@ -2,7 +2,7 @@
 
 namespace DsWebCrawlerBundle\Normalizer;
 
-use DynamicSearchBundle\Context\ContextDataInterface;
+use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Exception\NormalizerException;
 use DynamicSearchBundle\Normalizer\Resource\NormalizedDataResource;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMeta;
@@ -24,13 +24,11 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public static function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['locales', 'skip_not_localized_documents']);
-
         $resolver->setAllowedTypes('locales', ['string[]']);
         $resolver->setAllowedTypes('skip_not_localized_documents', ['bool']);
-
         $resolver->setDefaults(['skip_not_localized_documents' => true]);
         $resolver->setDefaults(['locales' => \Pimcore\Tool::getValidLanguages()]);
     }
@@ -46,7 +44,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
     /**
      * {@inheritdoc}
      */
-    protected function normalizePage(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    protected function normalizePage(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
     {
         /** @var Document $document */
         $document = $resourceContainer->getResource();
@@ -75,7 +73,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
     /**
      * {@inheritdoc}
      */
-    protected function normalizeAsset(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    protected function normalizeAsset(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
     {
         /** @var Asset $asset */
         $asset = $resourceContainer->getResource();
@@ -90,7 +88,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
     /**
      * {@inheritdoc}
      */
-    protected function normalizeDataObject(ContextDataInterface $contextData, ResourceContainerInterface $resourceContainer)
+    protected function normalizeDataObject(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
     {
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();

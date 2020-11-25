@@ -9,7 +9,8 @@ A Spider Crawler Extension for [Pimcore Dynamic Search](https://github.com/dachc
 
 
 ## Requirements
-- Pimcore >= 5.8.0
+* Pimcore >= 6.3
+* Symfony >= 4.4
 - Pimcore Dynamic Search
 
 ***
