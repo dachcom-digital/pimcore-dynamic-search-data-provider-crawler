@@ -18,6 +18,14 @@
             "DsWebCrawlerBundle\\": "src/DsWebCrawlerBundle"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "": "src/"
+        },
+        "classmap": [
+            "app/AppKernel.php"
+        ]
+    },
     "require": {
         "symfony/symfony": "^4|^5",
         "pimcore/pimcore": "^6.6",
