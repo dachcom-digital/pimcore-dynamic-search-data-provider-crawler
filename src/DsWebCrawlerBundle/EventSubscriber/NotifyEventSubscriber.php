@@ -124,6 +124,6 @@ class NotifyEventSubscriber implements EventSubscriberInterface
 
         $newDataEvent = new NewDataEvent($this->contextDispatchType, $this->contextName, $rawContent, $this->crawlType, $this->resourceMeta);
 
-        $this->eventDispatcher->dispatch(DynamicSearchEvents::NEW_DATA_AVAILABLE, $newDataEvent);
+        $this->eventDispatcher->dispatch($newDataEvent, DynamicSearchEvents::NEW_DATA_AVAILABLE);
     }
 }

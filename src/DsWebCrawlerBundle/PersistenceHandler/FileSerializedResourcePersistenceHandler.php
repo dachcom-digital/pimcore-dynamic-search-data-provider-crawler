@@ -61,7 +61,7 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
         $this->totalSizePersisted += $file->fwrite(serialize($resource));
 
         $event = new GenericEvent(null, ['resource' => $file, 'uri' => $resource->getUri()->toString()]);
-        $this->downloader->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_VALID_RESOURCE_DOWNLOADED, $event);
+        $this->downloader->getDispatcher()->dispatch($event, DsWebCrawlerEvents::DS_WEB_CRAWLER_VALID_RESOURCE_DOWNLOADED);
     }
 
     /**

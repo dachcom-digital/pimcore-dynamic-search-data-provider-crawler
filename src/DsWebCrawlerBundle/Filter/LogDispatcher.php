@@ -53,6 +53,6 @@ trait LogDispatcher
         $this->filtered[] = $saveUri;
         $this->filterPersistor->set($saveUri, time());
         $event = new GenericEvent($this, ['uri' => $uri, 'filterType' => $filterType]);
-        $this->dispatcher->dispatch(SpiderEvents::SPIDER_CRAWL_FILTER_PREFETCH, $event);
+        $this->dispatcher->dispatch($event, SpiderEvents::SPIDER_CRAWL_FILTER_PREFETCH);
     }
 }

@@ -165,11 +165,11 @@ class CrawlerService implements CrawlerServiceInterface
 
         $this->getSpiderDownloader()->setPersistenceHandler($persistenceHandler);
 
-        $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_START, new GenericEvent($this, ['spider' => $this->spider]));
+        $this->spider->getDispatcher()->dispatch(new GenericEvent($this, ['spider' => $this->spider]), DsWebCrawlerEvents::DS_WEB_CRAWLER_START);
 
         $this->spider->crawl();
 
-        $this->spider->getDispatcher()->dispatch(DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH, new GenericEvent($this, ['spider' => $this->spider]));
+        $this->spider->getDispatcher()->dispatch(new GenericEvent($this, ['spider' => $this->spider]), DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH);
     }
 
     protected function initializeSpider()
@@ -197,10 +197,7 @@ class CrawlerService implements CrawlerServiceInterface
         ];
 
         $event = new CrawlerRequestHeaderEvent();
-        $this->eventDispatcher->dispatch(
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_REQUEST_HEADER,
-            $event
-        );
+        $this->eventDispatcher->dispatch($event, DsWebCrawlerEvents::DS_WEB_CRAWLER_REQUEST_HEADER);
 
         $headerElements = array_merge($defaultHeaderElements, $event->getHeaders());
 
@@ -399,12 +396,12 @@ class CrawlerService implements CrawlerServiceInterface
     protected function dispatchError(string $message, \Exception $exception)
     {
         $this->spider->getDispatcher()->dispatch(
-            DsWebCrawlerEvents::DS_WEB_CRAWLER_ERROR,
             new GenericEvent($this, [
                 'spider'    => $this->spider,
                 'message'   => $message,
                 'exception' => $exception
-            ])
+            ]),
+            DsWebCrawlerEvents::DS_WEB_CRAWLER_ERROR
         );
     }
 }

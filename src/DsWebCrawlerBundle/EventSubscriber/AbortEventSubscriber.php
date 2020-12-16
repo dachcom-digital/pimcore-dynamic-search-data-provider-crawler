@@ -9,7 +9,7 @@ use DynamicSearchBundle\Event\ErrorEvent;
 use DynamicSearchBundle\EventDispatcher\DynamicSearchEventDispatcherInterface;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use VDB\Spider\Event\SpiderEvents;
 
@@ -122,7 +122,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
 
         $this->dispatched = true;
         $newDataEvent = new ErrorEvent($this->contextName, 'crawler has been stopped by user', DsWebCrawlerBundle::PROVIDER_NAME);
-        $this->eventDispatcher->dispatch(DynamicSearchEvents::ERROR_DISPATCH_ABORT, $newDataEvent);
+        $this->eventDispatcher->dispatch($newDataEvent, DynamicSearchEvents::ERROR_DISPATCH_ABORT);
     }
 
     /**
@@ -137,6 +137,6 @@ class AbortEventSubscriber implements EventSubscriberInterface
 
         $this->dispatched = true;
         $errorEvent = new ErrorEvent($this->contextName, $event->getArgument('message'), DsWebCrawlerBundle::PROVIDER_NAME, $event->getArgument('exception'));
-        $this->eventDispatcher->dispatch(DynamicSearchEvents::ERROR_DISPATCH_CRITICAL, $errorEvent);
+        $this->eventDispatcher->dispatch($errorEvent, DynamicSearchEvents::ERROR_DISPATCH_CRITICAL);
     }
 }
