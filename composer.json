@@ -1,7 +1,7 @@
 {
     "name": "dachcom-digital/dynamic-search-data-provider-crawler",
     "type": "dynamic-search-provider-bundle",
-    "license": "GPL-3.0+",
+    "license": "GPL-3.0-or-later",
     "description": "",
     "keywords": ["pimcore", "search", "dynamic-search", "data-provider","crawler"],
     "homepage": "https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler",
@@ -23,7 +23,7 @@
             "": "src/"
         },
         "classmap": [
-            "app/AppKernel.php"
+            "app/TestKernel.php"
         ]
     },
     "require": {
