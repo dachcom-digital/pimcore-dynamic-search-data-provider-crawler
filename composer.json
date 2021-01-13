@@ -29,7 +29,6 @@
     "require": {
         "symfony/symfony": "^4|^5",
         "pimcore/pimcore": "^6.6",
-        "dachcom-digital/dynamic-search": "^0.7",
         "vdb/php-spider": "^0.5"
     },
     "require-dev": {
