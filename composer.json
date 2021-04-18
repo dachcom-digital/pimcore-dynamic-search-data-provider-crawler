@@ -26,16 +26,11 @@
             "app/TestKernel.php"
         ]
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0-dev"
-        }
-    },
     "require": {
         "symfony/symfony": "^4|^5",
         "pimcore/pimcore": "^6.6",
         "vdb/php-spider": "^0.5",
-        "dachcom-digital/dynamic-search": "^0.7"
+        "dachcom-digital/dynamic-search": "^1.0"
     },
     "require-dev": {
         "codeception/codeception": "~2.4.0",
