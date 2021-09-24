@@ -148,12 +148,12 @@ Identifier: `resource_text_extractor`
 Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffolder`
 
 Return Type: `string|null`
-| Name                             | Default Value            | Allowed Type | Description                                              |
-|:---------------------------------|:-------------------------|:-------------|:---------------------------------------------------------|
-|`content_start_indicator`         | `<!-- main-content -->`  | string       | Marks the begin of the indexable page content            |
-|`content_end_indicator`           | `<!-- /main-content -->` | string       | Marks the end of the indexable page conten               |
-|`content_exclude_start_indicator` | null                     | null|string  | Marks the begin of the text to be excluded from indexing |
-|`content_exclude_end_indicator`   | null                     | null|string  | Marks the end of the text to be excluded from indexing   |
+| Name                             | Default Value            | Allowed Type | Description                                               |
+|:---------------------------------|:-------------------------|:-------------|:----------------------------------------------------------|
+|`content_start_indicator`         | `<!-- main-content -->`  | string       | Marks the begin of the indexable page content             |
+|`content_end_indicator`           | `<!-- /main-content -->` | string       | Marks the end of the indexable page conten                |
+|`content_exclude_start_indicator` | null                     | null\|string  | Marks the begin of the text to be excluded from indexing |
+|`content_exclude_end_indicator`   | null                     | null\|string  | Marks the end of the text to be excluded from indexing   |
 
 ##### TitleExtractor
 Identifier: `resource_title_extractor`   
