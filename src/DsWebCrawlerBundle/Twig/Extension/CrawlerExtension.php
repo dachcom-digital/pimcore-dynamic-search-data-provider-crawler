@@ -8,30 +8,21 @@ use Twig\TwigFunction;
 
 class CrawlerExtension extends AbstractExtension
 {
-    /**
-     * @var CrawlerStateServiceInterface
-     */
-    protected $crawlerStateService;
+    protected CrawlerStateServiceInterface $crawlerStateService;
 
-    /**
-     * @param CrawlerStateServiceInterface $crawlerStateService
-     */
     public function __construct(CrawlerStateServiceInterface $crawlerStateService)
     {
         $this->crawlerStateService = $crawlerStateService;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
             new TwigFunction('ds_web_crawler_active', [$this, 'checkCrawlerState'])
         ];
     }
 
-    public function checkCrawlerState()
+    public function checkCrawlerState(): bool
     {
         return $this->crawlerStateService->isDsWebCrawlerCrawler();
     }

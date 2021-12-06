@@ -11,35 +11,19 @@ use VDB\Spider\Resource as DataResource;
 
 class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
 {
-    /**
-     * @var ContextDefinitionInterface
-     */
-    protected $contextDefinition;
+    protected ContextDefinitionInterface $contextDefinition;
+    protected LoggerInterface $logger;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @param LoggerInterface $logger
-     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isBaseResource($resource)
+    public function isBaseResource($resource): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isApplicable($resource): bool
     {
         if (!$resource instanceof DataResource) {
@@ -57,9 +41,6 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setup(ContextDefinitionInterface $contextDefinition, $resource): array
     {
         $this->contextDefinition = $contextDefinition;
@@ -93,12 +74,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
         ];
     }
 
-    /**
-     * @param DataResource $resource
-     *
-     * @return array|null
-     */
-    protected function extractPdfData(DataResource $resource)
+    protected function extractPdfData(DataResource $resource): ?array
     {
         $assetTmpDir = PIMCORE_SYSTEM_TEMP_DIRECTORY;
 
@@ -158,12 +134,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
         ];
     }
 
-    /**
-     * @param DataResource $resource
-     *
-     * @return array
-     */
-    protected function getAssetMeta(DataResource $resource)
+    protected function getAssetMeta(DataResource $resource): array
     {
         $link = $resource->getUri()->toString();
 
@@ -209,11 +180,7 @@ class HttpResponsePdfDataScaffolder implements ResourceScaffolderInterface
         return $assetMetaData;
     }
 
-    /**
-     * @param string $level
-     * @param string $message
-     */
-    protected function log($level, $message)
+    protected function log(string $level, string $message): void
     {
         $contextName = $this->contextDefinition instanceof ContextDefinitionInterface ? $this->contextDefinition->getName() : '--';
         $this->logger->log($level, $message, 'http_response_pdf', $contextName);

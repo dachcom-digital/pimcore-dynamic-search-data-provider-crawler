@@ -21,21 +21,18 @@
     "autoload-dev": {
         "psr-4": {
             "": "src/"
-        },
-        "classmap": [
-            "app/TestKernel.php"
-        ]
+        }
     },
     "require": {
-        "symfony/symfony": "^4|^5",
-        "pimcore/pimcore": "^6.6",
-        "vdb/php-spider": "^0.5",
-        "dachcom-digital/dynamic-search": "^1.0"
+        "pimcore/pimcore": "^10.1",
+        "vdb/php-spider": "^0.6",
+        "dachcom-digital/dynamic-search": "^2.0"
     },
     "require-dev": {
-        "codeception/codeception": "~2.4.0",
+        "codeception/codeception": "^4.1",
+        "codeception/module-symfony": "^1.6",
         "phpstan/phpstan": "^0.12",
         "phpstan/phpstan-symfony": "^0.12",
-        "symplify/easy-coding-standard": "^8.0"
+        "symplify/easy-coding-standard": "^9.0"
     }
 }

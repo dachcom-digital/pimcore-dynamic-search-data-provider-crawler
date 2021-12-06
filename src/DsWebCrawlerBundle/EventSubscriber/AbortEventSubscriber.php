@@ -15,94 +15,46 @@ use VDB\Spider\Event\SpiderEvents;
 
 class AbortEventSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var bool
-     */
-    protected $dispatched;
+    protected bool $dispatched;
+    protected string $contextName;
+    protected string $contextDispatchType;
+    protected string $crawlType;
+    protected ?ResourceMetaInterface $resourceMeta = null;
+    protected LoggerInterface $logger;
+    protected DynamicSearchEventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var string
-     */
-    protected $contextName;
-
-    /**
-     * @var string
-     */
-    protected $contextDispatchType;
-
-    /**
-     * @var string
-     */
-    protected $crawlType;
-
-    /**
-     * @var ResourceMetaInterface
-     */
-    protected $resourceMeta;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @var DynamicSearchEventDispatcherInterface
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @param DynamicSearchEventDispatcherInterface $eventDispatcher
-     */
     public function __construct(DynamicSearchEventDispatcherInterface $eventDispatcher)
     {
         $this->dispatched = false;
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * @param string $contextName
-     */
-    public function setContextName(string $contextName)
+    public function setContextName(string $contextName): void
     {
         $this->contextName = $contextName;
     }
 
-    /**
-     * @param string $contextDispatchType
-     */
-    public function setContextDispatchType(string $contextDispatchType)
+    public function setContextDispatchType(string $contextDispatchType): void
     {
         $this->contextDispatchType = $contextDispatchType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setCrawlType(string $crawlType)
+    public function setCrawlType(string $crawlType): void
     {
         $this->crawlType = $crawlType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta): void
     {
         $this->resourceMeta = $resourceMeta;
     }
 
-    /**
-     * @param LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @return array
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             SpiderEvents::SPIDER_CRAWL_USER_STOPPED  => 'stoppedCrawler',
@@ -110,10 +62,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @param Event $event
-     */
-    public function stoppedCrawler(Event $event)
+    public function stoppedCrawler(Event $event): void
     {
         // only trigger once.
         if ($this->dispatched === true) {
@@ -125,10 +74,7 @@ class AbortEventSubscriber implements EventSubscriberInterface
         $this->eventDispatcher->dispatch($newDataEvent, DynamicSearchEvents::ERROR_DISPATCH_ABORT);
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function errorCrawler(GenericEvent $event)
+    public function errorCrawler(GenericEvent $event): void
     {
         // only trigger once.
         if ($this->dispatched === true) {

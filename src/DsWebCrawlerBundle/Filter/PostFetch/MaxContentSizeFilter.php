@@ -7,30 +7,19 @@ use VDB\Spider\Resource as SpiderResource;
 
 class MaxContentSizeFilter implements PostFetchFilterInterface
 {
-    /**
-     * @var float|int
-     */
-    protected $maxFileSize = 0;
+    protected float|int $maxFileSize;
 
-    /**
-     * @param int $maxFileSize
-     */
-    public function __construct($maxFileSize = 0)
+    public function __construct(float|int $maxFileSize = 0)
     {
         $this->maxFileSize = (float) $maxFileSize;
     }
 
-    /**
-     * @param SpiderResource $resource
-     *
-     * @return bool
-     */
-    public function match(SpiderResource $resource)
+    public function match(SpiderResource $resource): bool
     {
         $size = $resource->getResponse()->getBody()->getSize();
         $sizeMb = $size / 1024 / 1024;
 
-        if ($this->maxFileSize == 0 || $sizeMb <= $this->maxFileSize) {
+        if ($this->maxFileSize === 0 || $sizeMb <= $this->maxFileSize) {
             return false;
         }
 

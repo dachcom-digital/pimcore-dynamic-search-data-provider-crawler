@@ -9,21 +9,15 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class DsWebCrawlerBundle extends Bundle implements ProviderBundleInterface
 {
-    const PROVIDER_NAME = 'web_crawler';
+    public const PROVIDER_NAME = 'web_crawler';
 
-    /**
-     * @param ContainerBuilder $container
-     */
-    public function build(ContainerBuilder $container)
+    public function build(ContainerBuilder $container): void
     {
         parent::build($container);
 
         $container->addCompilerPass(new EventSubscriberPass());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getProviderName(): string
     {
         return self::PROVIDER_NAME;

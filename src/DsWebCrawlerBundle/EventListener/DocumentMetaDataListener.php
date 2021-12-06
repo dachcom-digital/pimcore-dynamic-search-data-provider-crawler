@@ -5,31 +5,15 @@ namespace DsWebCrawlerBundle\EventListener;
 use DsWebCrawlerBundle\Service\CrawlerStateServiceInterface;
 use Pimcore\Http\Request\Resolver\DocumentResolver;
 use Pimcore\Model\Document\Page;
-use Pimcore\Templating\Helper\HeadMeta;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Pimcore\Twig\Extension\Templating\HeadMeta;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 class DocumentMetaDataListener
 {
-    /**
-     * @var CrawlerStateServiceInterface
-     */
-    protected $crawlerState;
+    protected CrawlerStateServiceInterface $crawlerState;
+    protected DocumentResolver $documentResolver;
+    protected HeadMeta $headMeta;
 
-    /**
-     * @var DocumentResolver
-     */
-    protected $documentResolver;
-
-    /**
-     * @var HeadMeta
-     */
-    protected $headMeta;
-
-    /**
-     * @param CrawlerStateServiceInterface $crawlerState
-     * @param DocumentResolver             $documentResolver
-     * @param HeadMeta                     $headMeta
-     */
     public function __construct(
         CrawlerStateServiceInterface $crawlerState,
         DocumentResolver $documentResolver,
@@ -40,10 +24,7 @@ class DocumentMetaDataListener
         $this->headMeta = $headMeta;
     }
 
-    /**
-     * @param GetResponseEvent $event
-     */
-    public function onKernelRequest(GetResponseEvent $event)
+    public function onKernelRequest(RequestEvent $event): void
     {
         if (!$this->crawlerState->isDsWebCrawlerCrawler()) {
             return;
@@ -59,7 +40,7 @@ class DocumentMetaDataListener
         }
 
         $str = 'document_';
-        if (substr($request->attributes->get('_route'), 0, strlen($str)) !== $str) {
+        if (!str_starts_with($request->attributes->get('_route'), $str)) {
             return;
         }
 

@@ -8,15 +8,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TextExtractor implements FieldTransformerInterface
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $defaults = [
             'content_start_indicator'         => '<!-- main-content -->',
@@ -34,18 +28,12 @@ class TextExtractor implements FieldTransformerInterface
         $resolver->setAllowedTypes('content_exclude_end_indicator', ['null', 'string']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer): ?string
     {
         if (!$resourceContainer->hasAttribute('html')) {
             return null;
@@ -58,18 +46,11 @@ class TextExtractor implements FieldTransformerInterface
         $html = $resourceContainer->getAttribute('html');
 
         $content = $this->extract($this->options, $html);
-        $content = $this->cleanHtml($content);
 
-        return $content;
+        return $this->cleanHtml($content);
     }
 
-    /**
-     * @param array  $options
-     * @param string $html
-     *
-     * @return string
-     */
-    protected function extract(array $options, $html)
+    protected function extract(array $options, string $html): string
     {
         $documentHasDelimiter = false;
         $documentHasExcludeDelimiter = false;
@@ -81,12 +62,12 @@ class TextExtractor implements FieldTransformerInterface
 
         //now limit to search content area if indicators are set and found in this document
         if (!empty($searchStartIndicator)) {
-            $documentHasDelimiter = strpos($html, $searchStartIndicator) !== false;
+            $documentHasDelimiter = str_contains($html, $searchStartIndicator);
         }
 
         //remove content between exclude indicators
         if (!empty($searchExcludeStartIndicator)) {
-            $documentHasExcludeDelimiter = strpos($html, $searchExcludeStartIndicator) !== false;
+            $documentHasExcludeDelimiter = str_contains($html, $searchExcludeStartIndicator);
         }
 
         if ($documentHasDelimiter && !empty($searchStartIndicator) && !empty($searchEndIndicator)) {
@@ -117,12 +98,7 @@ class TextExtractor implements FieldTransformerInterface
         return $html;
     }
 
-    /**
-     * @param string $html
-     *
-     * @return string|string[]|null
-     */
-    protected function cleanHtml($html)
+    protected function cleanHtml(string $html): string|array|null
     {
         $text = preg_replace([
             '@(<script[^>]*?>.*?</script>)@si', // Strip out javascript
@@ -131,8 +107,7 @@ class TextExtractor implements FieldTransformerInterface
         ], '', $html);
 
         $text = strip_tags($text);
-        $text = preg_replace('@[ \t\n\r\f]+@', ' ', $text);
 
-        return $text;
+        return preg_replace('@[ \t\n\r\f]+@', ' ', $text);
     }
 }

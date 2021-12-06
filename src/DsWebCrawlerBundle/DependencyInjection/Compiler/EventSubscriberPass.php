@@ -12,10 +12,7 @@ final class EventSubscriberPass implements CompilerPassInterface
 {
     use PriorityTaggedServiceTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         foreach ($container->findTaggedServiceIds('ds_web_crawler.event_subscriber', true) as $id => $tags) {
             $definition = $container->getDefinition(EventSubscriberRegistry::class);

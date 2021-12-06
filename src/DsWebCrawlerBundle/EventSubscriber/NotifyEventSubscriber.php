@@ -13,98 +13,51 @@ use VDB\Spider\Resource;
 
 class NotifyEventSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var string
-     */
-    protected $contextName;
+    protected string $contextName;
+    protected string $contextDispatchType;
+    protected string $crawlType;
+    protected ?ResourceMetaInterface $resourceMeta = null;
+    protected LoggerInterface $logger;
+    protected DynamicSearchEventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var string
-     */
-    protected $contextDispatchType;
-
-    /**
-     * @var string
-     */
-    protected $crawlType;
-
-    /**
-     * @var ResourceMetaInterface
-     */
-    protected $resourceMeta;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @var DynamicSearchEventDispatcherInterface
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @param DynamicSearchEventDispatcherInterface $eventDispatcher
-     */
     public function __construct(DynamicSearchEventDispatcherInterface $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * @param string $contextName
-     */
-    public function setContextName(string $contextName)
+    public function setContextName(string $contextName): void
     {
         $this->contextName = $contextName;
     }
 
-    /**
-     * @param string $contextDispatchType
-     */
-    public function setContextDispatchType(string $contextDispatchType)
+    public function setContextDispatchType(string $contextDispatchType): void
     {
         $this->contextDispatchType = $contextDispatchType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setCrawlType(string $crawlType)
+    public function setCrawlType(string $crawlType): void
     {
         $this->crawlType = $crawlType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta): void
     {
         $this->resourceMeta = $resourceMeta;
     }
 
-    /**
-     * @param LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @return array
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             DsWebCrawlerEvents::DS_WEB_CRAWLER_VALID_RESOURCE_DOWNLOADED => 'notifyPersisted',
         ];
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function notifyPersisted(GenericEvent $event)
+    public function notifyPersisted(GenericEvent $event): void
     {
         /** @var \SplFileObject $resource */
         $resource = $event->getArgument('resource');
@@ -115,7 +68,6 @@ class NotifyEventSubscriber implements EventSubscriberInterface
 
         $resourceContent = file_get_contents($resource->getRealPath());
 
-        /** @var \VDB\Spider\Resource $rawContent */
         $rawContent = unserialize($resourceContent);
 
         if (!$rawContent instanceof Resource) {

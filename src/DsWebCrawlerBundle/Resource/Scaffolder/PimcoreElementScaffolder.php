@@ -10,39 +10,31 @@ use Pimcore\Model\DataObject;
 
 class PimcoreElementScaffolder implements ResourceScaffolderInterface
 {
-    /**
-     * @var ContextDefinitionInterface
-     */
-    protected $contextDefinition;
+    protected ContextDefinitionInterface $contextDefinition;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isBaseResource($resource)
+    public function isBaseResource($resource): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isApplicable($resource): bool
     {
         if ($resource instanceof Asset\Document) {
             return true;
-        } elseif ($resource instanceof Document) {
+        }
+
+        if ($resource instanceof Document) {
             return true;
-        } elseif ($resource instanceof DataObject\Concrete) {
+        }
+
+        if ($resource instanceof DataObject\Concrete) {
             return true;
         }
 
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setup(ContextDefinitionInterface $contextDefinition, $resource): array
+    public function setup(ContextDefinitionInterface $contextDefinition, mixed $resource): array
     {
         $this->contextDefinition = $contextDefinition;
 
