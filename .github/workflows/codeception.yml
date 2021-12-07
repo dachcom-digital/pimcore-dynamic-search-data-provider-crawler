@@ -75,7 +75,6 @@ jobs:
                     ls -al pimcore-codeception-framework
                     chmod +x ./pimcore-codeception-framework/src/_etc/scripts/setup.sh
                     ./pimcore-codeception-framework/src/_etc/scripts/setup.sh
-                    sed -i 's,\("dachcom-digital\/dynamic-search"\): "\(.*\)",\1: "2.x-dev",g' composer.json
 
             -   name: Install PHP
                 uses: shivammathur/setup-php@v2
@@ -128,6 +127,9 @@ jobs:
                     TEST_PIMCORE_VERSION: ${{ matrix.pimcore }}
                     TEST_SYMFONY_VERSION: ${{ matrix.symfony }}
                 run: |
+                    composer config "minimum-stability" "dev"
+                    composer config "prefer-stable" true
+                    sed -i 's,\("dachcom-digital\/dynamic-search"\): "\(.*\)",\1: "2.x-dev",g' ${{ github.workspace }}/lib/test-bundle/composer.json
                     chmod +x ./pimcore-codeception-framework/src/_etc/scripts/composer.sh
                     ./pimcore-codeception-framework/src/_etc/scripts/composer.sh
 
