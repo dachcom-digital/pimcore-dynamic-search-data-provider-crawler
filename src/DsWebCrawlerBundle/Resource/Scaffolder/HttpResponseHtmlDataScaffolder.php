@@ -11,8 +11,8 @@ use VDB\Spider\Resource as DataResource;
 
 class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
 {
-    protected ContextDefinitionInterface $contextDefinition;
     protected LoggerInterface $logger;
+    protected ?ContextDefinitionInterface $contextDefinition = null;
 
     public function __construct(LoggerInterface $logger)
     {

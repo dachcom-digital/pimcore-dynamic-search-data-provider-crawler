@@ -60,16 +60,15 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
 
-        /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
-        $linkGenerator = $object->getClass()->getLinkGenerator();
-        if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
-            $documentId = sprintf('%s_%d', 'object', $object->getId());
-            $path = $linkGenerator->generate($object);
-            $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), $object->getClassName(), ['path' => $path]);
-            $normalizedResources = new NormalizedDataResource(null, $resourceMeta);
-        } else {
-            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot recrawl.', $object->getId()));
+        $linkGenerator = $object->getClass()?->getLinkGenerator();
+        if (!$linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
+            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
         }
+
+        $documentId = sprintf('%s_%d', 'object', $object->getId());
+        $path = $linkGenerator->generate($object);
+        $resourceMeta = new ResourceMeta($documentId, $object->getId(), 'object', $object->getType(), $object->getClassName(), ['path' => $path]);
+        $normalizedResources = new NormalizedDataResource(null, $resourceMeta);
 
         return [$normalizedResources];
     }

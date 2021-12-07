@@ -75,27 +75,27 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
 
-        $normalizedResources = [];
+        $linkGenerator = $object->getClass()?->getLinkGenerator();
+        if (!$linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
+            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
+        }
 
-        /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
-        $linkGenerator = $object->getClass()->getLinkGenerator();
-        if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
-            foreach ($this->options['locales'] as $locale) {
-                $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
-                $path = $linkGenerator->generate($object, ['_locale' => $locale]);
-                $resourceMeta = new ResourceMeta(
+        $normalizedResources = [];
+        foreach ($this->options['locales'] as $locale) {
+            $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
+            $path = $linkGenerator->generate($object, ['_locale' => $locale]);
+            $normalizedResources[] = new NormalizedDataResource(
+                $resourceContainer,
+                new ResourceMeta(
                     $documentId,
                     $object->getId(),
                     'object',
                     $object->getType(),
                     $object->getClassName(),
-                    ['path'   => $path],
+                    ['path' => $path],
                     ['locale' => $locale]
-                );
-                $normalizedResources[] = new NormalizedDataResource($resourceContainer, $resourceMeta);
-            }
-        } else {
-            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
+                )
+            );
         }
 
         return $normalizedResources;
