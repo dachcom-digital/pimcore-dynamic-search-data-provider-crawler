@@ -195,3 +195,11 @@ Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffo
 
 Return Type: `string|null`
 Options: none
+
+
+## Copyright and License
+Copyright: [DACHCOM.DIGITAL](http://dachcom-digital.com)  
+For licensing details please visit [LICENSE.md](LICENSE.md)
+
+## Upgrade Info
+Before updating, please [check our upgrade notes!](UPGRADE.md)  
