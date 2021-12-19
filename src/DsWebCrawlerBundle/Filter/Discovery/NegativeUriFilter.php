@@ -11,31 +11,18 @@ class NegativeUriFilter implements PreFetchFilterInterface
 {
     use LogDispatcher;
 
-    /**
-     * @var array
-     */
-    public $regexBag = [];
+    protected array $regexBag;
 
-    /**
-     * @param array                    $regexBag
-     * @param EventDispatcherInterface $dispatcher
-     *
-     * @throws \Exception
-     */
-    public function __construct(array $regexBag, $dispatcher)
+    public function __construct(array $regexBag, EventDispatcherInterface $dispatcher)
     {
         $this->regexBag = $regexBag;
         $this->setDispatcher($dispatcher);
     }
 
     /**
-     * @param UriInterface $uri
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function match(UriInterface $uri)
+    public function match(UriInterface $uri): bool
     {
         foreach ($this->regexBag as $regex) {
             if (preg_match($regex, $uri->toString())) {

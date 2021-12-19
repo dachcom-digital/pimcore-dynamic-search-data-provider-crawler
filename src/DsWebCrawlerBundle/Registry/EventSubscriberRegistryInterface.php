@@ -7,7 +7,7 @@ use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 interface EventSubscriberRegistryInterface
 {
     /**
-     * @return EventSubscriberInterface[]
+     * @return array<string, array<int, EventSubscriberInterface>>
      */
-    public function all();
+    public function all(): array;
 }

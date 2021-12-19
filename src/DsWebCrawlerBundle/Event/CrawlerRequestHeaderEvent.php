@@ -6,17 +6,12 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class CrawlerRequestHeaderEvent extends Event
 {
-    /**
-     * @var resource
-     */
-    protected $headers = [];
+    protected array $headers = [];
 
     /**
-     * @param array $header
-     *
      * @throws \Exception
      */
-    public function addHeader($header)
+    public function addHeader(array $header)
     {
         if (!isset($header['name'])) {
             throw new \Exception('ds-web-crawler header property "name" missing');
@@ -29,10 +24,7 @@ class CrawlerRequestHeaderEvent extends Event
         $this->headers[] = $header;
     }
 
-    /**
-     * @return resource
-     */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }

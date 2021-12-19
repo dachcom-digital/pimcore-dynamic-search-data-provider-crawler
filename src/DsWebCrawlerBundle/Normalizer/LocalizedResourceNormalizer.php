@@ -6,25 +6,19 @@ use DynamicSearchBundle\Context\ContextDefinitionInterface;
 use DynamicSearchBundle\Exception\NormalizerException;
 use DynamicSearchBundle\Normalizer\Resource\NormalizedDataResource;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMeta;
+use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Resource\Container\ResourceContainerInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
-use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use VDB\Spider\Resource as SpiderResource;
 
 class LocalizedResourceNormalizer extends AbstractResourceNormalizer
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function configureOptions(OptionsResolver $resolver)
+    public static function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['locales', 'skip_not_localized_documents']);
         $resolver->setAllowedTypes('locales', ['string[]']);
@@ -33,18 +27,12 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $resolver->setDefaults(['locales' => \Pimcore\Tool::getValidLanguages()]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function normalizePage(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
+    protected function normalizePage(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer): array
     {
         /** @var Document $document */
         $document = $resourceContainer->getResource();
@@ -70,10 +58,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function normalizeAsset(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
+    protected function normalizeAsset(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer): array
     {
         /** @var Asset $asset */
         $asset = $resourceContainer->getResource();
@@ -85,51 +70,43 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         return [new NormalizedDataResource($resourceContainer, $resourceMeta)];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function normalizeDataObject(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer)
+    protected function normalizeDataObject(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer): array
     {
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
 
-        $normalizedResources = [];
+        $linkGenerator = $object->getClass()?->getLinkGenerator();
+        if (!$linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
+            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
+        }
 
-        /** @var DataObject\ClassDefinition\LinkGeneratorInterface $linkGenerator */
-        $linkGenerator = $object->getClass()->getLinkGenerator();
-        if ($linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
-            foreach ($this->options['locales'] as $locale) {
-                $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
-                $path = $linkGenerator->generate($object, ['_locale' => $locale]);
-                $resourceMeta = new ResourceMeta(
+        $normalizedResources = [];
+        foreach ($this->options['locales'] as $locale) {
+            $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
+            $path = $linkGenerator->generate($object, ['_locale' => $locale]);
+            $normalizedResources[] = new NormalizedDataResource(
+                $resourceContainer,
+                new ResourceMeta(
                     $documentId,
                     $object->getId(),
                     'object',
                     $object->getType(),
                     $object->getClassName(),
-                    ['path'   => $path],
+                    ['path' => $path],
                     ['locale' => $locale]
-                );
-                $normalizedResources[] = new NormalizedDataResource($resourceContainer, $resourceMeta);
-            }
-        } else {
-            throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
+                )
+            );
         }
 
         return $normalizedResources;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function generateResourceMetaFromHtmlResource(SpiderResource $resource)
+    protected function generateResourceMetaFromHtmlResource(SpiderResource $resource): ?ResourceMetaInterface
     {
-        /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
 
-        $documentId = null;
         $resourceId = null;
         $resourceCollectionType = null;
         $resourceType = null;
@@ -180,10 +157,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, $resourceSubType);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function generateResourceMetaFromPdfResource(array $resourceAttributes)
+    protected function generateResourceMetaFromPdfResource(array $resourceAttributes): ?ResourceMetaInterface
     {
         $assetMeta = $resourceAttributes['asset_meta'];
 

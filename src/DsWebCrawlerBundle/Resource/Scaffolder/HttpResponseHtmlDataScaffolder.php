@@ -11,35 +11,19 @@ use VDB\Spider\Resource as DataResource;
 
 class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
 {
-    /**
-     * @var ContextDefinitionInterface
-     */
-    protected $contextDefinition;
+    protected LoggerInterface $logger;
+    protected ?ContextDefinitionInterface $contextDefinition = null;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @param LoggerInterface $logger
-     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isBaseResource($resource)
+    public function isBaseResource($resource): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isApplicable($resource): bool
     {
         if (!$resource instanceof DataResource) {
@@ -95,9 +79,6 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setup(ContextDefinitionInterface $contextDefinition, $resource): array
     {
         $this->contextDefinition = $contextDefinition;
@@ -124,12 +105,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
         ];
     }
 
-    /**
-     * @param string $html
-     *
-     * @return DOMDocument
-     */
-    protected function generateDomDocument($html)
+    protected function generateDomDocument(string $html): DOMDocument
     {
         libxml_use_internal_errors(true);
 
@@ -143,12 +119,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
         return $doc;
     }
 
-    /**
-     * @param DOMDocument $doc
-     *
-     * @return string
-     */
-    protected function extractHtml(DOMDocument $doc)
+    protected function extractHtml(DOMDocument $doc): string
     {
         libxml_use_internal_errors(true);
 
@@ -159,11 +130,7 @@ class HttpResponseHtmlDataScaffolder implements ResourceScaffolderInterface
         return $html;
     }
 
-    /**
-     * @param string $level
-     * @param string $message
-     */
-    protected function log($level, $message)
+    protected function log(string $level, string $message): void
     {
         $contextName = $this->contextDefinition instanceof ContextDefinitionInterface ? $this->contextDefinition->getName() : '--';
         $this->logger->log($level, $message, 'http_response_html', $contextName);

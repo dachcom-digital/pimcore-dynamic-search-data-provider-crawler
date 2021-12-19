@@ -6,16 +6,9 @@ use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 
 class EventSubscriberRegistry implements EventSubscriberRegistryInterface
 {
-    /**
-     * @var array|EventSubscriberInterface[]
-     */
-    protected $subscriber;
+    protected array $subscriber;
 
-    /**
-     * @param EventSubscriberInterface $service
-     * @param array                    $dispatcher
-     */
-    public function register($service, $dispatcher)
+    public function register(EventSubscriberInterface $service, string $dispatcher): void
     {
         if (!is_string($dispatcher)) {
             throw new \InvalidArgumentException(
@@ -36,10 +29,7 @@ class EventSubscriberRegistry implements EventSubscriberRegistryInterface
         $this->subscriber[$dispatcher][] = $service;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function all()
+    public function all(): array
     {
         return $this->subscriber;
     }

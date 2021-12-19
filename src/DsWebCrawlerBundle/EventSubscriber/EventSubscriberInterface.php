@@ -7,28 +7,13 @@ use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 
 interface EventSubscriberInterface extends \Symfony\Component\EventDispatcher\EventSubscriberInterface
 {
-    /**
-     * @param LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger);
+    public function setLogger(LoggerInterface $logger): void;
 
-    /**
-     * @param string $contextName
-     */
-    public function setContextName(string $contextName);
+    public function setContextName(string $contextName): void;
 
-    /**
-     * @param string $contextDispatchType
-     */
-    public function setContextDispatchType(string $contextDispatchType);
+    public function setContextDispatchType(string $contextDispatchType): void;
 
-    /**
-     * @param string $crawlType
-     */
-    public function setCrawlType(string $crawlType);
+    public function setCrawlType(string $crawlType): void;
 
-    /**
-     * @param ResourceMetaInterface|null $resourceMeta
-     */
-    public function setResourceMeta(?ResourceMetaInterface $resourceMeta);
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta): void;
 }

@@ -4,5 +4,5 @@ namespace DsWebCrawlerBundle\Service;
 
 interface CrawlerStateServiceInterface
 {
-    public function isDsWebCrawlerCrawler();
+    public function isDsWebCrawlerCrawler(): bool;
 }

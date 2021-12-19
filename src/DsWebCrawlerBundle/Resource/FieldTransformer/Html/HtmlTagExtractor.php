@@ -10,15 +10,9 @@ use VDB\Spider\Resource as SpiderResource;
 
 class HtmlTagExtractor implements FieldTransformerInterface
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['tag', 'return_multiple']);
 
@@ -31,18 +25,12 @@ class HtmlTagExtractor implements FieldTransformerInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer): mixed
     {
         if (!$resourceContainer->hasAttribute('resource')) {
             return null;
