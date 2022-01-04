@@ -21,10 +21,10 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
     public static function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['locales', 'skip_not_localized_documents']);
-        $resolver->setAllowedTypes('locales', ['string[]']);
+        $resolver->setAllowedTypes('locales', ['string[]', 'null']);
         $resolver->setAllowedTypes('skip_not_localized_documents', ['bool']);
         $resolver->setDefaults(['skip_not_localized_documents' => true]);
-        $resolver->setDefaults(['locales' => \Pimcore\Tool::getValidLanguages()]);
+        $resolver->setDefaults(['locales' => null]);
     }
 
     public function setOptions(array $options): void
@@ -81,7 +81,7 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         }
 
         $normalizedResources = [];
-        foreach ($this->options['locales'] as $locale) {
+        foreach ($this->getLocales() as $locale) {
             $documentId = sprintf('%s_%s_%d', 'object', $locale, $object->getId());
             $path = $linkGenerator->generate($object, ['_locale' => $locale]);
             $normalizedResources[] = new NormalizedDataResource(
@@ -180,5 +180,14 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $documentId = sprintf('asset_%d', $value);
 
         return new ResourceMeta($documentId, $resourceId, $resourceCollectionType, $resourceType, null);
+    }
+
+    protected function getLocales(): array
+    {
+        if ($this->options['locales'] === null) {
+            return \Pimcore\Tool::getValidLanguages();
+        }
+
+        return $this->options['locales'];
     }
 }
