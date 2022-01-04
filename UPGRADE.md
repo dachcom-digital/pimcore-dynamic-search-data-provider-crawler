@@ -2,6 +2,7 @@
 
 ### 2.0.1
 - [BUGFIX] do not fetch default locales on build process
+- [BUGFIX] Wrong call to get resource in HtmlTagExtractor [@Brainshaker95](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/issues/4)
 
 ***
 

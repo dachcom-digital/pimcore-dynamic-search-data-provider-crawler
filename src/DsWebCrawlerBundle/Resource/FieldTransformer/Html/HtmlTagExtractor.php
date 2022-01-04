@@ -32,14 +32,13 @@ class HtmlTagExtractor implements FieldTransformerInterface
 
     public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer): mixed
     {
-        if (!$resourceContainer->hasAttribute('resource')) {
+        if (!$resourceContainer->hasResource()) {
             return null;
         }
 
         /** @var SpiderResource $resource */
-        $resource = $resourceContainer->getAttribute('resource');
+        $resource = $resourceContainer->getResource();
 
-        /** @var Crawler $crawler */
         $crawler = $resource->getCrawler();
         $stream = $resource->getResponse()->getBody();
         $stream->rewind();
