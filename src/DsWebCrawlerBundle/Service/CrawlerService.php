@@ -193,7 +193,7 @@ class CrawlerService implements CrawlerServiceInterface
 
         $discoverySet->maxDepth = $this->hasOption('max_link_depth') ? $this->getOption('max_link_depth') : 15;
 
-        $discoverySet->set(new XPathExpressionDiscoverer("//link[@hreflang]|//a[not(@rel='nofollow')]/a"));
+        $discoverySet->set(new XPathExpressionDiscoverer("//link[@hreflang]|//a[not(@rel='nofollow')]|/a"));
 
         $discoverySet->addFilter(new Filter\Prefetch\AllowedSchemeFilter($this->getOption('allowed_schemes')));
 
