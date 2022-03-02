@@ -211,7 +211,7 @@ class CrawlerService implements CrawlerServiceInterface
 
         $discoverySet->addFilter(new Discovery\UriFilter($this->getSpecialOption('invalid_links'), $this->spider->getDispatcher()));
 
-        if ($this->hasOption('valid_links')) {
+        if ($this->hasOption('valid_links') && $this->getOption('valid_links')) {
             $discoverySet->addFilter(new Discovery\NegativeUriFilter($this->getOption('valid_links'), $this->spider->getDispatcher()));
         }
     }
