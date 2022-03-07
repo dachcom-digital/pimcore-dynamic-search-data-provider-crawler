@@ -62,7 +62,7 @@ class FilterPersistor
         }
     }
 
-    private function openFile(string $file, int $mode): mixed
+    private function openFile(string $file, string $mode): mixed
     {
         return @fopen($file, $mode);
     }

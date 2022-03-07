@@ -5,6 +5,7 @@ namespace DsWebCrawlerBundle\Service;
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 use DsWebCrawlerBundle\Registry\EventSubscriberRegistryInterface;
+use DsWebCrawlerBundle\Spider\Discoverer\XPathExpressionDiscoverer;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
@@ -24,7 +25,6 @@ use VDB\Spider\QueueManager\InMemoryQueueManager;
 use VDB\Spider\RequestHandler\GuzzleRequestHandler;
 use VDB\Spider\Spider;
 use VDB\Spider\Filter;
-use VDB\Spider\Discoverer\XPathExpressionDiscoverer;
 use GuzzleHttp\Middleware;
 
 class CrawlerService implements CrawlerServiceInterface
@@ -193,7 +193,7 @@ class CrawlerService implements CrawlerServiceInterface
 
         $discoverySet->maxDepth = $this->hasOption('max_link_depth') ? $this->getOption('max_link_depth') : 15;
 
-        $discoverySet->set(new XPathExpressionDiscoverer("//link[@hreflang]|//a[not(@rel='nofollow')]/a"));
+        $discoverySet->set(new XPathExpressionDiscoverer("//link[@hreflang]|//a[not(@rel='nofollow')]"));
 
         $discoverySet->addFilter(new Filter\Prefetch\AllowedSchemeFilter($this->getOption('allowed_schemes')));
 
@@ -211,7 +211,7 @@ class CrawlerService implements CrawlerServiceInterface
 
         $discoverySet->addFilter(new Discovery\UriFilter($this->getSpecialOption('invalid_links'), $this->spider->getDispatcher()));
 
-        if ($this->hasOption('valid_links')) {
+        if ($this->hasOption('valid_links') && $this->getOption('valid_links')) {
             $discoverySet->addFilter(new Discovery\NegativeUriFilter($this->getOption('valid_links'), $this->spider->getDispatcher()));
         }
     }
