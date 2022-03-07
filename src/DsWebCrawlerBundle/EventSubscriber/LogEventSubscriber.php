@@ -13,97 +13,43 @@ use VDB\Spider\Event\SpiderEvents;
 
 class LogEventSubscriber implements EventSubscriberInterface
 {
-    protected $startedTime;
+    protected string|float $startedTime;
+    protected int $persisted = 0;
+    protected int $queued = 0;
+    protected int $filtered = 0;
+    protected int $failed = 0;
+    protected string $contextName;
+    protected string $contextDispatchType;
+    protected string $crawlType;
+    protected ?ResourceMetaInterface $resourceMeta = null;
+    protected LoggerInterface $logger;
 
-    /**
-     * @var int
-     */
-    protected $persisted = 0;
-
-    /**
-     * @var int
-     */
-    protected $queued = 0;
-
-    /**
-     * @var int
-     */
-    protected $filtered = 0;
-
-    /**
-     * @var int
-     */
-    protected $failed = 0;
-
-    /**
-     * @var string
-     */
-    protected $contextName;
-
-    /**
-     * @var string
-     */
-    protected $contextDispatchType;
-
-    /**
-     * @var string
-     */
-    protected $crawlType;
-
-    /**
-     * @var ResourceMetaInterface
-     */
-    protected $resourceMeta;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @param string $contextName
-     */
-    public function setContextName(string $contextName)
+    public function setContextName(string $contextName): void
     {
         $this->contextName = $contextName;
     }
 
-    /**
-     * @param string $contextDispatchType
-     */
-    public function setContextDispatchType(string $contextDispatchType)
+    public function setContextDispatchType(string $contextDispatchType): void
     {
         $this->contextDispatchType = $contextDispatchType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setCrawlType(string $crawlType)
+    public function setCrawlType(string $crawlType): void
     {
         $this->crawlType = $crawlType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setResourceMeta(?ResourceMetaInterface $resourceMeta)
+    public function setResourceMeta(?ResourceMetaInterface $resourceMeta): void
     {
         $this->resourceMeta = $resourceMeta;
     }
 
-    /**
-     * @param LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @return array
-     */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             SpiderEvents::SPIDER_CRAWL_FILTER_POSTFETCH   => 'logFiltered',
@@ -118,10 +64,7 @@ class LogEventSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function logStarted(GenericEvent $event)
+    public function logStarted(GenericEvent $event): void
     {
         $this->queued = 0;
         $this->filtered = 0;
@@ -131,10 +74,7 @@ class LogEventSubscriber implements EventSubscriberInterface
         $this->startedTime = microtime(true);
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function logFinished(GenericEvent $event)
+    public function logFinished(GenericEvent $event): void
     {
         $totalTime = microtime(true) - $this->startedTime;
         $totalTime = number_format((float) $totalTime, 3, '.', '');
@@ -161,20 +101,14 @@ class LogEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function logQueued(GenericEvent $event)
+    public function logQueued(GenericEvent $event): void
     {
         $this->queued++;
 
         $this->logEvent('queued', $event);
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function logPersisted(GenericEvent $event)
+    public function logPersisted(GenericEvent $event): void
     {
         $this->persisted++;
 
@@ -184,7 +118,7 @@ class LogEventSubscriber implements EventSubscriberInterface
     /**
      * @param GenericEvent $event
      */
-    public function logFiltered(GenericEvent $event)
+    public function logFiltered(GenericEvent $event): void
     {
         $this->queued++;
 
@@ -193,10 +127,7 @@ class LogEventSubscriber implements EventSubscriberInterface
         $this->logEvent($name, $event);
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function logFailed(GenericEvent $event)
+    public function logFailed(GenericEvent $event): void
     {
         $this->failed++;
 
@@ -204,30 +135,18 @@ class LogEventSubscriber implements EventSubscriberInterface
         $this->logEvent('failed', $event, 'critical', $message);
     }
 
-    /**
-     * @param Event $event
-     */
-    public function logStoppedBySignal(Event $event)
+    public function logStoppedBySignal(Event $event): void
     {
         $logEvent = new GenericEvent($this, ['errorMessage' => 'crawling canceled']);
         $this->logEvent('stopped', $logEvent, 'debug', $logEvent->getArgument('errorMessage'));
     }
 
-    /**
-     * @param GenericEvent $event
-     */
-    public function logCrawled(GenericEvent $event)
+    public function logCrawled(GenericEvent $event): void
     {
         $this->logEvent('uri.crawled', $event, 'debug');
     }
 
-    /**
-     * @param string       $name
-     * @param GenericEvent $event
-     * @param string       $debugLevel
-     * @param string       $additionalMessage
-     */
-    protected function logEvent($name, GenericEvent $event, $debugLevel = 'debug', $additionalMessage = '')
+    protected function logEvent(string $name, GenericEvent $event, string $debugLevel = 'debug', string $additionalMessage = ''): void
     {
         $triggerLog = in_array($name, [
             'uri.crawled',

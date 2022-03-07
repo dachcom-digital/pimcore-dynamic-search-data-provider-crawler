@@ -9,26 +9,10 @@ use VDB\Uri\UriInterface;
 
 trait LogDispatcher
 {
-    /**
-     * @var array
-     */
-    protected $filtered = [];
+    protected array $filtered = [];
+    protected EventDispatcherInterface $dispatcher;
+    protected FilterPersistor $filterPersistor;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $dispatcher;
-
-    /**
-     * @var FilterPersistor
-     */
-    protected $filterPersistor;
-
-    /**
-     * @param EventDispatcherInterface $dispatcher
-     *
-     * @throws \Exception
-     */
     public function setDispatcher(EventDispatcherInterface $dispatcher)
     {
         $this->filterPersistor = new FilterPersistor();
@@ -36,12 +20,9 @@ trait LogDispatcher
     }
 
     /**
-     * @param UriInterface $uri
-     * @param string       $filterType
-     *
      * @throws \Exception
      */
-    public function notifyDispatcher(UriInterface $uri, $filterType)
+    public function notifyDispatcher(UriInterface $uri, string $filterType): void
     {
         $stringUri = $uri->toString();
         $saveUri = md5($stringUri);

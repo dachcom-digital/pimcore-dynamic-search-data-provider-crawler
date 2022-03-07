@@ -7,25 +7,14 @@ use VDB\Spider\Resource as SpiderResource;
 
 class MimeTypeFilter implements PostFetchFilterInterface
 {
-    /**
-     * @var array
-     */
-    protected $allowedMimeType = [];
+    protected array $allowedMimeType;
 
-    /**
-     * @param array $allowedMimeType
-     */
-    public function __construct($allowedMimeType)
+    public function __construct(array $allowedMimeType)
     {
         $this->allowedMimeType = $allowedMimeType;
     }
 
-    /**
-     * @param SpiderResource $resource
-     *
-     * @return bool
-     */
-    public function match(SpiderResource $resource)
+    public function match(SpiderResource $resource): bool
     {
         $hasContentType = count(
             array_intersect(

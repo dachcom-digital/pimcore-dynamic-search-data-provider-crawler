@@ -9,31 +9,18 @@ use VDB\Spider\Resource as SpiderResource;
 
 class LanguageExtractor implements FieldTransformerInterface
 {
-    /**
-     * @var array
-     */
-    protected $options;
+    protected array $options;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
-        return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer)
+    public function transformData(string $dispatchTransformerName, ResourceContainerInterface $resourceContainer): string|array|null
     {
         if (!$resourceContainer->hasResource()) {
             return null;
@@ -49,21 +36,15 @@ class LanguageExtractor implements FieldTransformerInterface
         $contentLanguage = $resource->getResponse()->getHeaderLine('Content-Language');
 
         $language = strtolower($this->getLanguageFromResponse($contentLanguage, $html));
-        $language = str_replace('_', '-', $language);
 
-        return $language;
+        return str_replace('_', '-', $language);
     }
 
     /**
-     * @param string $contentLanguage
-     * @param string $body
-     *
      * Try to find the document's language by first looking for Content-Language in Http headers than in html
      * attribute and last in content-language meta tag
-     *
-     * @return string
      */
-    protected function getLanguageFromResponse($contentLanguage, $body)
+    protected function getLanguageFromResponse(string $contentLanguage, string $body): string
     {
         $l = $contentLanguage;
 

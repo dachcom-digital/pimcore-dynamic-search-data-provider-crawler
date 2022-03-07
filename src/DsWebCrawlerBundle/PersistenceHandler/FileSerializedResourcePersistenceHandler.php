@@ -5,21 +5,15 @@ namespace DsWebCrawlerBundle\PersistenceHandler;
 use DsWebCrawlerBundle\DsWebCrawlerEvents;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use VDB\Spider\Downloader\Downloader;
-use VDB\Spider\PersistenceHandler\PersistenceHandlerInterface;
 use VDB\Spider\PersistenceHandler\FilePersistenceHandler;
+use VDB\Spider\Resource;
 use VDB\Spider\Resource as SpiderResource;
 
-class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler implements PersistenceHandlerInterface
+class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler
 {
-    /**
-     * @var Downloader
-     */
-    protected $downloader;
+    protected Downloader $downloader;
 
-    /**
-     * @param Downloader $downloader
-     */
-    public function setSpiderDownloader(Downloader $downloader)
+    public function setSpiderDownloader(Downloader $downloader): void
     {
         $this->downloader = $downloader;
     }
@@ -33,7 +27,7 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
      *
      * @return string
      */
-    protected function completePath($path)
+    protected function completePath($path): string
     {
         if (substr($path, -1, 1) === '/') {
             $path .= $this->defaultFilename;
@@ -47,10 +41,7 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
         return $path;
     }
 
-    /**
-     * @param SpiderResource $resource
-     */
-    public function persist(SpiderResource $resource)
+    public function persist(SpiderResource $resource): void
     {
         $path = rtrim($this->getResultPath() . $this->getFileSystemPath($resource), '/');
         if (!is_dir($path)) {
@@ -64,10 +55,7 @@ class FileSerializedResourcePersistenceHandler extends FilePersistenceHandler im
         $this->downloader->getDispatcher()->dispatch($event, DsWebCrawlerEvents::DS_WEB_CRAWLER_VALID_RESOURCE_DOWNLOADED);
     }
 
-    /**
-     * @return SpiderResource
-     */
-    public function current()
+    public function current(): Resource
     {
         return unserialize($this->getIterator()->current()->getContents());
     }

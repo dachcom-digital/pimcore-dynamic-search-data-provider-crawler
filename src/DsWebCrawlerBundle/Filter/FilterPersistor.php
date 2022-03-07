@@ -6,31 +6,15 @@ use DsWebCrawlerBundle\Configuration\ConfigurationInterface;
 
 class FilterPersistor
 {
-    /**
-     * @var string
-     */
-    private $db = null;
-
-    /**
-     * @var array
-     */
-    private $data = [];
-
-    /**
-     * @var array
-     */
-    public $options = [
+    private string $db;
+    private array $data = [];
+    public array $options = [
         'ext'               => '.tmp',
         'cache'             => true,
         'swap_memory_limit' => 1048576
     ];
 
-    /**
-     * @param array $options
-     *
-     * @throws \Exception
-     */
-    public function __construct($options = [])
+    public function __construct(array $options = [])
     {
         // Set current database
         $this->db = ConfigurationInterface::CRAWLER_URI_FILTER_FILE_PATH;
@@ -41,22 +25,14 @@ class FilterPersistor
         }
     }
 
-    /**
-     * Set flintstone options.
-     *
-     * @param array $options an array of options
-     */
-    public function setOptions($options)
+    public function setOptions(array $options): void
     {
         foreach ($options as $key => $value) {
             $this->options[$key] = $value;
         }
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function setupDatabase()
+    public function setupDatabase(): void
     {
         if (empty($this->data)) {
             $this->data['file'] = $this->db;
@@ -86,25 +62,15 @@ class FilterPersistor
         }
     }
 
-    /**
-     * @param string $file
-     * @param int    $mode
-     *
-     * @return resource
-     */
-    private function openFile($file, $mode)
+    private function openFile(string $file, string $mode): mixed
     {
         return @fopen($file, $mode);
     }
 
     /**
-     * @param string $key
-     *
-     * @return array|bool|mixed|string
-     *
      * @throws \Exception
      */
-    private function getKey($key)
+    private function getKey(string $key): mixed
     {
         $data = false;
 
@@ -149,14 +115,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     * @param mixed  $data
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    private function replaceKey($key, $data)
+    private function replaceKey(string $key, mixed $data): bool
     {
         $swap = true;
         $contents = '';
@@ -192,7 +153,7 @@ class FilterPersistor
 
             while (($line = fgets($fp)) !== false) {
                 $pieces = explode('=', $line);
-                if ($pieces[0] == $key) {
+                if ($pieces[0] === $key) {
                     if ($data === false) {
                         continue;
                     }
@@ -254,14 +215,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     * @param mixed  $data
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    private function setKey($key, $data)
+    private function setKey(string $key, mixed $data): bool
     {
         if ($this->getKey($key) !== false) {
             return $this->replaceKey($key, $data);
@@ -300,13 +256,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    private function deleteKey($key)
+    private function deleteKey(string $key): bool
     {
         if ($this->getKey($key) !== false) {
             if ($this->replaceKey($key, false)) {
@@ -322,11 +274,9 @@ class FilterPersistor
     }
 
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
-    private function flushDatabase()
+    private function flushDatabase(): bool
     {
         if (($fp = $this->openFile($this->data['file'], 'wb')) !== false) {
             @fclose($fp);
@@ -341,13 +291,7 @@ class FilterPersistor
         return true;
     }
 
-    /**
-     * @param mixed $data
-     * @param bool  $reverse
-     *
-     * @return array|mixed
-     */
-    private function preserveLines($data, $reverse)
+    private function preserveLines(mixed $data, bool $reverse): mixed
     {
         if ($reverse) {
             $from = ['\\n', '\\r'];
@@ -369,13 +313,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    private function isValidKey($key)
+    private function isValidKey(string $key): bool
     {
         $len = strlen($key);
 
@@ -395,13 +335,9 @@ class FilterPersistor
     }
 
     /**
-     * @param mixed $data
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    private function isValidData($data)
+    private function isValidData(mixed $data): bool
     {
         if (!is_string($data) && !is_int($data) && !is_float($data) && !is_array($data)) {
             throw new \Exception('Invalid data type');
@@ -411,13 +347,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     *
-     * @return mixed
-     *
      * @throws \Exception
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         $this->setupDatabase();
 
@@ -429,14 +361,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     * @param mixed  $data
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function set($key, $data)
+    public function set(string $key, mixed $data): bool
     {
         $this->setupDatabase();
 
@@ -448,13 +375,9 @@ class FilterPersistor
     }
 
     /**
-     * @param string $key
-     *
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function delete($key)
+    public function delete(string $key): bool
     {
         $this->setupDatabase();
 
@@ -466,11 +389,9 @@ class FilterPersistor
     }
 
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
-    public function flush()
+    public function flush(): bool
     {
         $this->setupDatabase();
 

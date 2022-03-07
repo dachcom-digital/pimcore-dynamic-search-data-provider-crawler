@@ -5,6 +5,7 @@ namespace DsWebCrawlerBundle\Service;
 use DsWebCrawlerBundle\DsWebCrawlerBundle;
 use DsWebCrawlerBundle\EventSubscriber\EventSubscriberInterface;
 use DsWebCrawlerBundle\Registry\EventSubscriberRegistryInterface;
+use DsWebCrawlerBundle\Spider\Discoverer\XPathExpressionDiscoverer;
 use DynamicSearchBundle\Logger\LoggerInterface;
 use DynamicSearchBundle\Normalizer\Resource\ResourceMetaInterface;
 use DynamicSearchBundle\Provider\DataProviderInterface;
@@ -24,61 +25,20 @@ use VDB\Spider\QueueManager\InMemoryQueueManager;
 use VDB\Spider\RequestHandler\GuzzleRequestHandler;
 use VDB\Spider\Spider;
 use VDB\Spider\Filter;
-use VDB\Spider\Discoverer\XPathExpressionDiscoverer;
 use GuzzleHttp\Middleware;
 
 class CrawlerService implements CrawlerServiceInterface
 {
-    /**
-     * @var EventSubscriberRegistryInterface
-     */
-    protected $eventSubscriberRegistry;
+    protected EventSubscriberRegistryInterface $eventSubscriberRegistry;
+    protected EventDispatcherInterface $eventDispatcher;
+    protected Spider $spider;
+    protected string $crawlType;
+    protected LoggerInterface $logger;
+    protected ?ResourceMetaInterface $resourceMeta = null;
+    protected string $contextName;
+    protected string $contextDispatchType;
+    protected array $providerConfiguration;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @var Spider
-     */
-    protected $spider;
-
-    /**
-     * @var string
-     */
-    protected $crawlType;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @var ResourceMetaInterface
-     */
-    protected $resourceMeta;
-
-    /**
-     * @var string
-     */
-    protected $contextName;
-
-    /**
-     * @var string
-     */
-    protected $contextDispatchType;
-
-    /**
-     * @var array
-     */
-    protected $providerConfiguration;
-
-    /**
-     * @param LoggerInterface                  $logger
-     * @param EventSubscriberRegistryInterface $eventSubscriberRegistry
-     * @param EventDispatcherInterface         $eventDispatcher
-     */
     public function __construct(
         LoggerInterface $logger,
         EventSubscriberRegistryInterface $eventSubscriberRegistry,
@@ -89,10 +49,7 @@ class CrawlerService implements CrawlerServiceInterface
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initFullCrawl(string $contextName, string $contextDispatchType, array $providerConfiguration)
+    public function initFullCrawl(string $contextName, string $contextDispatchType, array $providerConfiguration): void
     {
         $this->crawlType = DataProviderInterface::PROVIDER_BEHAVIOUR_FULL_DISPATCH;
         $this->contextName = $contextName;
@@ -100,10 +57,7 @@ class CrawlerService implements CrawlerServiceInterface
         $this->providerConfiguration = $providerConfiguration;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initSingleCrawl(ResourceMetaInterface $resourceMeta, string $contextName, string $contextDispatchType, array $providerConfiguration)
+    public function initSingleCrawl(ResourceMetaInterface $resourceMeta, string $contextName, string $contextDispatchType, array $providerConfiguration): void
     {
         $this->crawlType = DataProviderInterface::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH;
         $this->resourceMeta = $resourceMeta;
@@ -112,19 +66,12 @@ class CrawlerService implements CrawlerServiceInterface
         $this->providerConfiguration = $providerConfiguration;
     }
 
-    /**
-     * @param string $level
-     * @param string $message
-     */
-    public function log($level, $message)
+    public function log(string $level, string $message): void
     {
         $this->logger->log($level, $message, DsWebCrawlerBundle::PROVIDER_NAME, $this->contextName);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process()
+    public function process(): void
     {
         try {
             $this->initializeSpider();
@@ -159,7 +106,7 @@ class CrawlerService implements CrawlerServiceInterface
         $this->getSpiderDownloader()->addPostFetchFilter(new PostFetch\MimeTypeFilter($this->getOption('allowed_mime_types')));
 
         // we need to deep set spider downloader again,
-        // since there is no way to dispatch a successfully resource fetch in downloader itself
+        // since there is no way to dispatch a successful resource fetch in downloader itself
         $persistenceHandler = new PersistenceHandler\FileSerializedResourcePersistenceHandler(Configuration::CRAWLER_PERSISTENCE_STORE_DIR_PATH);
         $persistenceHandler->setSpiderDownloader($this->getSpiderDownloader());
 
@@ -172,7 +119,7 @@ class CrawlerService implements CrawlerServiceInterface
         $this->spider->getDispatcher()->dispatch(new GenericEvent($this, ['spider' => $this->spider]), DsWebCrawlerEvents::DS_WEB_CRAWLER_FINISH);
     }
 
-    protected function initializeSpider()
+    protected function initializeSpider(): void
     {
         $spider = new Spider($this->getSpecialOption('seed'));
         $guzzleClient = new Client(['allow_redirects' => false, 'debug' => false]);
@@ -186,7 +133,7 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * @param HandlerStack $stack
      */
-    protected function addHeadersToRequest(HandlerStack $stack)
+    protected function addHeadersToRequest(HandlerStack $stack): void
     {
         $defaultHeaderElements = [
             [
@@ -208,10 +155,10 @@ class CrawlerService implements CrawlerServiceInterface
         }
     }
 
-    protected function attachSpiderEvents()
+    protected function attachSpiderEvents(): void
     {
         foreach ($this->eventSubscriberRegistry->all() as $dispatcherType => $eventSubscriber) {
-            /** @var EventSubscriberInterface $typeEventSubscriber */
+
             foreach ($eventSubscriber as $typeEventSubscriber) {
                 $typeEventSubscriber->setLogger($this->logger);
                 $typeEventSubscriber->setContextName($this->contextName);
@@ -240,7 +187,7 @@ class CrawlerService implements CrawlerServiceInterface
     /**
      * @throws \Exception
      */
-    protected function setupDiscoverySet()
+    protected function setupDiscoverySet(): void
     {
         $discoverySet = $this->spider->getDiscovererSet();
 
@@ -264,15 +211,12 @@ class CrawlerService implements CrawlerServiceInterface
 
         $discoverySet->addFilter(new Discovery\UriFilter($this->getSpecialOption('invalid_links'), $this->spider->getDispatcher()));
 
-        if ($this->hasOption('valid_links')) {
+        if ($this->hasOption('valid_links') && $this->getOption('valid_links')) {
             $discoverySet->addFilter(new Discovery\NegativeUriFilter($this->getOption('valid_links'), $this->spider->getDispatcher()));
         }
     }
 
-    /**
-     * @return Downloader
-     */
-    protected function getSpiderDownloader()
+    protected function getSpiderDownloader(): Downloader
     {
         /** @var Downloader $downloader */
         $downloader = $this->spider->getDownloader();
@@ -280,10 +224,7 @@ class CrawlerService implements CrawlerServiceInterface
         return $downloader;
     }
 
-    /**
-     * @return GuzzleRequestHandler
-     */
-    protected function getSpiderDownloaderRequestHandler()
+    protected function getSpiderDownloaderRequestHandler(): GuzzleRequestHandler
     {
         /** @var GuzzleRequestHandler $requestHandler */
         $requestHandler = $this->getSpiderDownloader()->getRequestHandler();
@@ -291,10 +232,7 @@ class CrawlerService implements CrawlerServiceInterface
         return $requestHandler;
     }
 
-    /**
-     * @return InMemoryQueueManager
-     */
-    protected function getSpiderQueueManager()
+    protected function getSpiderQueueManager(): InMemoryQueueManager
     {
         /** @var InMemoryQueueManager $queueManager */
         $queueManager = $this->spider->getQueueManager();
@@ -302,43 +240,34 @@ class CrawlerService implements CrawlerServiceInterface
         return $queueManager;
     }
 
-    /**
-     * @param string $key
-     *
-     * @return bool
-     */
-    protected function hasOption($key)
+    protected function hasOption(string $key): bool
     {
         return isset($this->providerConfiguration[$key]);
     }
 
-    /**
-     * @param string $key
-     *
-     * @return mixed
-     */
-    protected function getOption($key)
+    protected function getOption(string $key): mixed
     {
         return $this->providerConfiguration[$key];
     }
 
-    protected function getSpecialOption($key)
+    protected function getSpecialOption(string $key): mixed
     {
         if ($key === 'invalid_links') {
             return $this->getInvalidLinks();
-        } elseif ($key === 'max_crawl_limit') {
+        }
+
+        if ($key === 'max_crawl_limit') {
             return $this->getMaxCrawlLimit();
-        } elseif ($key === 'seed') {
+        }
+
+        if ($key === 'seed') {
             return $this->getSeed();
         }
 
         return null;
     }
 
-    /**
-     * @return int
-     */
-    protected function getMaxCrawlLimit()
+    protected function getMaxCrawlLimit(): int
     {
         if ($this->crawlType === DataProviderInterface::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH) {
             return 1;
@@ -347,10 +276,7 @@ class CrawlerService implements CrawlerServiceInterface
         return $this->hasOption('max_crawl_limit') ? $this->getOption('max_crawl_limit') : 1;
     }
 
-    /**
-     * @return string
-     */
-    protected function getSeed()
+    protected function getSeed(): string
     {
         if ($this->crawlType === DataProviderInterface::PROVIDER_BEHAVIOUR_SINGLE_DISPATCH) {
             $host = $this->providerConfiguration['host'];
@@ -368,10 +294,7 @@ class CrawlerService implements CrawlerServiceInterface
         return $this->providerConfiguration['seed'];
     }
 
-    /**
-     * @return array|bool
-     */
-    protected function getInvalidLinks()
+    protected function getInvalidLinks(): array
     {
         $userInvalidLinks = $this->hasOption('user_invalid_links') ? $this->getOption('user_invalid_links') : [];
         $coreInvalidLinks = $this->hasOption('core_invalid_links') ? $this->getOption('core_invalid_links') : [];
@@ -389,11 +312,7 @@ class CrawlerService implements CrawlerServiceInterface
         return $invalidLinkRegex;
     }
 
-    /**
-     * @param string     $message
-     * @param \Exception $exception
-     */
-    protected function dispatchError(string $message, \Exception $exception)
+    protected function dispatchError(string $message, \Exception $exception): void
     {
         $this->spider->getDispatcher()->dispatch(
             new GenericEvent($this, [
