@@ -2,15 +2,15 @@
 
 [![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Latest Release](https://img.shields.io/packagist/v/dachcom-digital/dynamic-search-data-provider-crawler.svg?style=flat-square)](https://packagist.org/packages/dachcom-digital/dynamic-search-data-provider-crawler)
-[![Tests](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/Codeception/master?style=flat-square&logo=github&label=codeception)](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/actions?query=workflow%3ACodeception+branch%3Amaster)
-[![PhpStan](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/PHP%20Stan/master?style=flat-square&logo=github&label=phpstan%20level%204)](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/actions?query=workflow%3A"PHP+Stan"+branch%3Amaster)
+[![Tests](https://img.shields.io/github/actions/workflow/status/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/.github/workflows/codeception.yml?branch=master&style=flat-square&logo=github&label=codeception)](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/actions?query=workflow%3ACodeception+branch%3Amaster)
+[![PhpStan](https://img.shields.io/github/actions/workflow/status/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/.github/workflows/php-stan.yml?branch=master&style=flat-square&logo=github&label=phpstan%20level%204)](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/actions?query=workflow%3A"PHP+Stan"+branch%3Amaster)
 
 A spider crawler extension for [Pimcore Dynamic Search](https://github.com/dachcom-digital/pimcore-dynamic-search).
 
 ## Release Plan
 | Release | Supported Pimcore Versions | Supported Symfony Versions | Release Date | Maintained           | Branch                                                                                          |
 |---------|----------------------------|----------------------------|--------------|----------------------|-------------------------------------------------------------------------------------------------|
-| **2.x** | `10.0` - `10.5`            | `^5.4`                     | 19.12.2021   | Yes (Bugs, Features) | master                                                                                          |
+| **2.x** | `10.0` - `10.6`            | `^5.4`                     | 19.12.2021   | Yes (Bugs, Features) | master                                                                                          |
 | **1.x** | `6.6` - `6.9`              | `^4.4`                     | 18.04.2021   | No                   | [1.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/1.x) |
 
 ***
