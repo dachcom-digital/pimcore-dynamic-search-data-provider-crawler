@@ -7,11 +7,8 @@ use VDB\Spider\Resource as SpiderResource;
 
 class MimeTypeFilter implements PostFetchFilterInterface
 {
-    protected array $allowedMimeType;
-
-    public function __construct(array $allowedMimeType)
+    public function __construct(protected array $allowedMimeType)
     {
-        $this->allowedMimeType = $allowedMimeType;
     }
 
     public function match(SpiderResource $resource): bool

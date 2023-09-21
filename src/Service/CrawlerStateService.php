@@ -6,11 +6,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class CrawlerStateService implements CrawlerStateServiceInterface
 {
-    protected RequestStack $requestStack;
-
-    public function __construct(RequestStack $requestStack)
+    public function __construct(protected RequestStack $requestStack)
     {
-        $this->requestStack = $requestStack;
     }
 
     public function isDsWebCrawlerCrawler(): bool

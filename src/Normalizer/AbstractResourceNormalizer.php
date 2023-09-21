@@ -18,15 +18,10 @@ use VDB\Spider\Resource as SpiderResource;
 
 abstract class AbstractResourceNormalizer implements ResourceNormalizerInterface
 {
-    protected TransformerManagerInterface $transformerManager;
-    protected DataManagerInterface $dataManager;
-
     public function __construct(
-        TransformerManagerInterface $transformerManager,
-        DataManagerInterface $dataManager
+        protected TransformerManagerInterface $transformerManager,
+        protected DataManagerInterface $dataManager
     ) {
-        $this->transformerManager = $transformerManager;
-        $this->dataManager = $dataManager;
     }
 
     public function normalizeToResourceStack(ContextDefinitionInterface $contextDefinition, ResourceContainerInterface $resourceContainer): array

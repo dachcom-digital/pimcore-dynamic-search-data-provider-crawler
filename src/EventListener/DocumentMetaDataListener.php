@@ -10,18 +10,11 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 class DocumentMetaDataListener
 {
-    protected CrawlerStateServiceInterface $crawlerState;
-    protected DocumentResolver $documentResolver;
-    protected HeadMeta $headMeta;
-
     public function __construct(
-        CrawlerStateServiceInterface $crawlerState,
-        DocumentResolver $documentResolver,
-        HeadMeta $headMeta
+        protected CrawlerStateServiceInterface $crawlerState,
+        protected DocumentResolver $documentResolver,
+        protected HeadMeta $headMeta
     ) {
-        $this->crawlerState = $crawlerState;
-        $this->documentResolver = $documentResolver;
-        $this->headMeta = $headMeta;
     }
 
     public function onKernelRequest(RequestEvent $event): void
@@ -30,7 +23,7 @@ class DocumentMetaDataListener
             return;
         }
 
-        if (!$event->isMasterRequest()) {
+        if (!$event->isMainRequest()) {
             return;
         }
 

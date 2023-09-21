@@ -8,11 +8,8 @@ use Twig\TwigFunction;
 
 class CrawlerExtension extends AbstractExtension
 {
-    protected CrawlerStateServiceInterface $crawlerStateService;
-
-    public function __construct(CrawlerStateServiceInterface $crawlerStateService)
+    public function __construct(protected CrawlerStateServiceInterface $crawlerStateService)
     {
-        $this->crawlerStateService = $crawlerStateService;
     }
 
     public function getFunctions(): array

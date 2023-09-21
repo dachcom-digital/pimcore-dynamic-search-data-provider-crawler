@@ -15,7 +15,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "DsWebCrawlerBundle\\": "src/DsWebCrawlerBundle"
+            "DsWebCrawlerBundle\\": "src/"
         }
     },
     "autoload-dev": {
@@ -24,15 +24,15 @@
         }
     },
     "require": {
-        "pimcore/pimcore": "^10.1",
-        "vdb/php-spider": "^0.6",
-        "dachcom-digital/dynamic-search": "^2.0"
+        "pimcore/pimcore": "^11.0",
+        "vdb/php-spider": "^0.7",
+        "dachcom-digital/dynamic-search": "^3.0"
     },
     "require-dev": {
-        "codeception/codeception": "^4.1",
-        "codeception/module-symfony": "^1.6",
-        "phpstan/phpstan": "^0.12",
-        "phpstan/phpstan-symfony": "^0.12",
+        "codeception/codeception": "^5.0",
+        "codeception/module-symfony": "^3.1",
+        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan-symfony": "^1.0",
         "symplify/easy-coding-standard": "^9.0"
     }
 }

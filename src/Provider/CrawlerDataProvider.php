@@ -16,14 +16,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CrawlerDataProvider implements DataProviderInterface
 {
-    protected CrawlerServiceInterface $crawlerService;
-    protected FileWatcherServiceInterface $fileWatcherService;
     protected array $configuration;
 
-    public function __construct(CrawlerServiceInterface $crawlerService, FileWatcherServiceInterface $fileWatcherService)
-    {
-        $this->crawlerService = $crawlerService;
-        $this->fileWatcherService = $fileWatcherService;
+    public function __construct(
+        protected CrawlerServiceInterface $crawlerService,
+        protected FileWatcherServiceInterface $fileWatcherService
+    ) {
     }
 
     public static function configureOptions(OptionsResolver $resolver): void
