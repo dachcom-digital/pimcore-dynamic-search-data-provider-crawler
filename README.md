@@ -10,7 +10,8 @@ A spider crawler extension for [Pimcore Dynamic Search](https://github.com/dachc
 ## Release Plan
 | Release | Supported Pimcore Versions | Supported Symfony Versions | Release Date | Maintained           | Branch                                                                                          |
 |---------|----------------------------|----------------------------|--------------|----------------------|-------------------------------------------------------------------------------------------------|
-| **2.x** | `10.0` - `10.6`            | `^5.4`                     | 19.12.2021   | Yes (Bugs, Features) | master                                                                                          |
+| **3.x** | `11.0`                     | `^6.2`                     | --           | Yes (Bugs, Features) | master                                                                                          |
+| **2.x** | `10.0` - `10.6`            | `^5.4`                     | 19.12.2021   | No                   | [2.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/2.x) |
 | **1.x** | `6.6` - `6.9`              | `^4.4`                     | 18.04.2021   | No                   | [1.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/1.x) |
 
 ***
@@ -18,8 +19,8 @@ A spider crawler extension for [Pimcore Dynamic Search](https://github.com/dachc
 ## Installation  
 ```json
 "require" : {
-    "dachcom-digital/dynamic-search" : "~2.0.0",
-    "dachcom-digital/dynamic-search-data-provider-crawler" : "~2.0.0"
+    "dachcom-digital/dynamic-search" : "~3.0.0",
+    "dachcom-digital/dynamic-search-data-provider-crawler" : "~3.0.0"
 }
 ```
 
@@ -28,30 +29,13 @@ You need to install / enable the Dynamic Search Bundle first.
 Read more about it [here](https://github.com/dachcom-digital/pimcore-dynamic-search#installation).
 After that, proceed as followed:
 
-### Enabling via `config/bundles.php`:
+Add Bundle to `bundles.php`:
 ```php
 <?php
 
 return [
     \DsWebCrawlerBundle\DsWebCrawlerBundle::class => ['all' => true],
 ];
-```
-
-### Enabling via `Kernel.php`:
-```php
-<?php
-
-namespace App;
-
-use Pimcore\HttpKernel\BundleCollection\BundleCollection;
-
-class Kernel extends \Pimcore\Kernel
-{
-    public function registerBundlesToCollection(BundleCollection $collection): void
-    {
-        $collection->addBundle(new \DsWebCrawlerBundle\DsWebCrawlerBundle());
-    }
-}
 ```
 
 ***
@@ -85,31 +69,31 @@ dynamic_search:
 
 ### always
 
-| Name                                 | Default Value                      | Description |
-|:-------------------------------------|:-----------------------------------|:------------|
-|`own_host_only`                       | false                              |             |
-|`allow_subdomains`                    | false                              |             |
-|`allow_query_in_url`                  | false                              |             |
-|`allow_hash_in_url`                   | false                              |             |
-|`allowed_mime_types`                  | ['text/html', 'application/pdf']   |             |
-|`allowed_schemes`                     | ['http']                           |             |
-|`content_max_size`                    | 0                                  |             |
+| Name                 | Default Value                    | Description |
+|:---------------------|:---------------------------------|:------------|
+| `own_host_only`      | false                            |             |
+| `allow_subdomains`   | false                            |             |
+| `allow_query_in_url` | false                            |             |
+| `allow_hash_in_url`  | false                            |             |
+| `allowed_mime_types` | ['text/html', 'application/pdf'] |             |
+| `allowed_schemes`    | ['http']                         |             |
+| `content_max_size`   | 0                                |             |
 
 ### full_dispatch
 
-| Name                                 | Default Value | Description |
-|:-------------------------------------|:--------------|:------------|
-|`seed`                                | null          |             |
-|`valid_links`                         | []            |             |
-|`user_invalid_links`                  | []            |             |
-|`max_link_depth`                      | 15            |             |
-|`max_crawl_limit`                     | 0             |             |
+| Name                 | Default Value | Description |
+|:---------------------|:--------------|:------------|
+| `seed`               | null          |             |
+| `valid_links`        | []            |             |
+| `user_invalid_links` | []            |             |
+| `max_link_depth`     | 15            |             |
+| `max_crawl_limit`    | 0             |             |
 
 ### single_dispatch
 
-| Name                                 | Default Value | Description |
-|:-------------------------------------|:--------------|:------------|
-|`host`                                | null          |             |
+| Name   | Default Value | Description |
+|:-------|:--------------|:------------|
+| `host` | null          |             |
 
 ***
 
@@ -126,10 +110,10 @@ Scaffold localized documents
 
 Options:
 
-| Name                          | Default Value                           | Allowed Type    | Description |
-|:------------------------------|:----------------------------------------|:----------------|:------------|
-|`locales`                      | all pimcore enabled languages           | array           |             |
-|`skip_not_localized_documents` | true                                    | bool            | if false, an exception rises if a document/object has no valid locale |
+| Name                           | Default Value                 | Allowed Type | Description                                                           |
+|:-------------------------------|:------------------------------|:-------------|:----------------------------------------------------------------------|
+| `locales`                      | all pimcore enabled languages | array        |                                                                       |
+| `skip_not_localized_documents` | true                          | bool         | if false, an exception rises if a document/object has no valid locale |
 
 ***
 
@@ -174,9 +158,10 @@ Supported Scaffolder: `http_response_html_scaffolder`
 
 Return Type: `string|null`
 Options: 
-| Name                         | Default Value | Allowed Type   | Description |
-|:-----------------------------|:--------------|:---------------|:------------|
-|`name`                        | null          | string         | The name of the meta tag to fetch the value from |
+
+| Name   | Default Value | Allowed Type | Description                                      |
+|:-------|:--------------|:-------------|:-------------------------------------------------|
+| `name` | null          | string       | The name of the meta tag to fetch the value from |
 
 ##### HtmlTagExtractor
 Identifier: `resource_html_tag_content_extractor`   
@@ -190,12 +175,13 @@ Identifier: `resource_text_extractor`
 Supported Scaffolder: `http_response_html_scaffolder`, `http_response_pdf_scaffolder`
 
 Return Type: `string|null`
-| Name                             | Default Value            | Allowed Type | Description                                               |
-|:---------------------------------|:-------------------------|:-------------|:----------------------------------------------------------|
-|`content_start_indicator`         | `<!-- main-content -->`  | string       | Marks the begin of the indexable page content             |
-|`content_end_indicator`           | `<!-- /main-content -->` | string       | Marks the end of the indexable page conten                |
-|`content_exclude_start_indicator` | null                     | null\|string  | Marks the begin of the text to be excluded from indexing |
-|`content_exclude_end_indicator`   | null                     | null\|string  | Marks the end of the text to be excluded from indexing   |
+
+| Name                              | Default Value            | Allowed Type | Description                                              |
+|:----------------------------------|:-------------------------|:-------------|:---------------------------------------------------------|
+| `content_start_indicator`         | `<!-- main-content -->`  | string       | Marks the begin of the indexable page content            |
+| `content_end_indicator`           | `<!-- /main-content -->` | string       | Marks the end of the indexable page conten               |
+| `content_exclude_start_indicator` | null                     | null\|string | Marks the begin of the text to be excluded from indexing |
+| `content_exclude_end_indicator`   | null                     | null\|string | Marks the end of the text to be excluded from indexing   |
 
 ##### TitleExtractor
 Identifier: `resource_title_extractor`   
