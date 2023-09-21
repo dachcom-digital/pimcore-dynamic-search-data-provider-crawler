@@ -18,6 +18,11 @@ class DsWebCrawlerBundle extends Bundle implements ProviderBundleInterface
         $container->addCompilerPass(new EventSubscriberPass());
     }
 
+    public function getPath(): string
+    {
+        return \dirname(__DIR__);
+    }
+
     public function getProviderName(): string
     {
         return self::PROVIDER_NAME;

@@ -60,7 +60,7 @@ class DefaultResourceNormalizer extends AbstractResourceNormalizer
         /** @var DataObject\Concrete $object */
         $object = $resourceContainer->getResource();
 
-        $linkGenerator = $object->getClass()?->getLinkGenerator();
+        $linkGenerator = $object->getClass()->getLinkGenerator();
         if (!$linkGenerator instanceof DataObject\ClassDefinition\LinkGeneratorInterface) {
             throw new NormalizerException(sprintf('no link generator for object "%d" found. cannot re-crawl.', $object->getId()));
         }
