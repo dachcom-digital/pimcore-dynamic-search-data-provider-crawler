@@ -44,11 +44,12 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $documentLocale = $document->getProperty('language');
 
         if (empty($documentLocale)) {
+
             if ($this->options['skip_not_localized_documents'] === false) {
                 throw new NormalizerException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $document->getId()));
-            } else {
-                return [];
             }
+
+            return [];
         }
 
         $documentId = sprintf('%s_%s_%d', 'document', $documentLocale, $document->getId());
@@ -141,14 +142,11 @@ class LocalizedResourceNormalizer extends AbstractResourceNormalizer
         $contentLanguage = strtolower(str_replace('-', '_', $contentLanguage));
 
         if (empty($contentLanguage)) {
+
             if ($this->options['skip_not_localized_documents'] === false) {
                 throw new NormalizerException(sprintf('Cannot determinate locale aware document id "%s": no language property given.', $resourceId));
-            } else {
-                return null;
             }
-        }
 
-        if (empty($contentLanguage)) {
             return null;
         }
 
