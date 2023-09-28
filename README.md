@@ -8,11 +8,11 @@
 A spider crawler extension for [Pimcore Dynamic Search](https://github.com/dachcom-digital/pimcore-dynamic-search).
 
 ## Release Plan
-| Release | Supported Pimcore Versions | Supported Symfony Versions | Release Date | Maintained           | Branch                                                                                          |
-|---------|----------------------------|----------------------------|--------------|----------------------|-------------------------------------------------------------------------------------------------|
-| **3.x** | `11.0`                     | `^6.2`                     | --           | Yes (Bugs, Features) | master                                                                                          |
-| **2.x** | `10.0` - `10.6`            | `^5.4`                     | 19.12.2021   | No                   | [2.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/2.x) |
-| **1.x** | `6.6` - `6.9`              | `^4.4`                     | 18.04.2021   | No                   | [1.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/1.x) |
+| Release | Supported Pimcore Versions | Supported Symfony Versions | Release Date | Maintained     | Branch                                                                                          |
+|---------|----------------------------|----------------------------|--------------|----------------|-------------------------------------------------------------------------------------------------|
+| **3.x** | `11.0`                     | `^6.2`                     | 28.09.2023   | Feature Branch | master                                                                                          |
+| **2.x** | `10.0` - `10.6`            | `^5.4`                     | 19.12.2021   | No             | [2.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/2.x) |
+| **1.x** | `6.6` - `6.9`              | `^4.4`                     | 18.04.2021   | No             | [1.x](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/tree/1.x) |
 
 ***
 
