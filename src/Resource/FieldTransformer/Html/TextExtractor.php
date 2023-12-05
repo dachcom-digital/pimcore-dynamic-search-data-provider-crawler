@@ -102,7 +102,7 @@ class TextExtractor implements FieldTransformerInterface
     {
         $text = preg_replace([
             '@(<script[^>]*?>.*?</script>)@si', // Strip out javascript
-            '@<style[^>]*?>.*?</style>@siU', // Strip style tags properly
+            '@<style[^>]*?>.*?</style>@si', // Strip style tags properly
             '@<![\s\S]*?--[ \t\n\r]*>@' // Strip multi-line comments including CDATA
         ], '', $html);
 
