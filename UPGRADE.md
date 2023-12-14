@@ -1,5 +1,8 @@
 # Upgrade Notes
 
+## 3.0.1
+- Fix greediness of regex style clean in TextExtractor.php [@frithjof](https://github.com/dachcom-digital/pimcore-dynamic-search-data-provider-crawler/pull/15)
+
 ## Migrating from Version 2.x to Version 3.0.0
 
 ### Global Changes
